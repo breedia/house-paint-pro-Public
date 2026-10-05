@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>住宅塗り替えカラー提案 Pro</title>
+  <style>
+:root{--bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:#0f172a;--blue:#2563eb;--red:#b91c1c;--r:16px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}button,input,select,textarea{font:inherit}.topbar{position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 18px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}.brand{font-weight:900;font-size:18px}.brand-sub{font-size:11px;color:var(--muted);margin-top:2px}.layout{max-width:1440px;margin:0 auto;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 24px rgba(15,23,42,.04)}.work-card{padding:12px;height:max-content;position:sticky;top:78px}.canvas-shell{position:relative;min-height:62vh;background:#e5e7eb;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none}.empty{text-align:center;padding:40px 22px;color:var(--muted);max-width:520px;display:flex;gap:8px;flex-direction:column}.empty strong{font-size:19px;color:var(--text)}canvas{display:block;max-width:100%;max-height:72vh}.canvas-tip{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(255,255,255,.93);padding:9px 12px;border-radius:10px;text-align:center;font-size:12px;box-shadow:0 3px 16px rgba(0,0,0,.08)}.canvas-badge{position:absolute;left:12px;top:12px;background:rgba(15,23,42,.87);color:#fff;border-radius:8px;padding:6px 9px;font-size:12px}.ai-overlay{position:absolute;inset:0;background:rgba(15,23,42,.68);color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px}.ai-overlay small{opacity:.8}.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.25);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.toolbar,.button-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.btn,button{border:0;border-radius:11px;background:#eef0f3;color:#111827;padding:10px 12px;font-size:13px;font-weight:750;cursor:pointer;text-decoration:none;text-align:center}button.primary,.btn.primary{background:var(--accent);color:#fff}button.danger{color:var(--red);background:#fff1f2}button:disabled{opacity:.38;cursor:not-allowed}.full{width:100%}.mini{padding:6px 8px;font-size:11px;border-radius:8px}.scheme-bar{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px;background:#f8fafc;border-radius:11px}.scheme-title{font-size:12px;font-weight:800}.scheme-group{display:flex;gap:5px;align-items:center;padding:5px 7px;background:white;border:1px solid var(--line);border-radius:9px;font-size:12px}.scheme-group.saved{border-color:#94a3b8}.scheme-notice{font-size:11px;color:var(--muted);margin-left:auto}.sidebar{display:flex;flex-direction:column;gap:12px}.panel{padding:14px}.panel h2{font-size:14px;margin:0 0 10px}.part-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.part-chip{border:1px solid var(--line);background:white;padding:9px 6px;border-radius:10px;font-size:12px;text-align:center;cursor:pointer}.part-chip.active{border-color:#111827;background:#111827;color:#fff}.field{margin-top:10px}.field.compact{margin-top:10px}.field label{display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;color:#4b5563;margin-bottom:5px}.field input,.field select,.field textarea,.field-row input,.field-row select{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:#111}.field input[type=color]{padding:3px;height:41px}.field input[type=range]{padding:0;border:none}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.notice{font-size:10px;line-height:1.55;color:var(--muted);background:#f8fafc;padding:8px;border-radius:8px;margin-top:10px}.tabs{display:flex;gap:5px;overflow:auto;padding-bottom:6px}.tab{white-space:nowrap;padding:7px 9px;font-size:11px;border-radius:8px}.tab.active{background:#111827;color:white}.palette{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-height:255px;overflow:auto;padding:2px}.swatch{aspect-ratio:1;border-radius:10px;background:var(--c);border:2px solid transparent;cursor:pointer;position:relative;overflow:hidden;min-height:54px}.swatch.active{border-color:#111827;box-shadow:0 0 0 2px white inset}.swatch .label{position:absolute;left:3px;right:3px;bottom:3px;background:rgba(255,255,255,.83);border-radius:6px;padding:3px;font-size:8px;text-align:center;color:#111;line-height:1.15}.layers{display:flex;flex-direction:column;gap:7px}.layer{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px}.layer.selected{border-color:#111827;background:#f8fafc}.layer-dot{width:20px;height:20px;border-radius:50%;background:var(--c);border:1px solid rgba(0,0,0,.15)}.layer-main{min-width:0}.layer-title{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.layer-sub{font-size:9px;color:var(--muted);margin-top:2px}.layer-actions{display:flex;gap:3px}.layer-actions button{padding:5px 7px;font-size:10px}.muted{color:var(--muted);font-size:12px}.small{font-size:10px;margin-top:7px}footer{max-width:1440px;margin:0 auto;padding:6px 16px 22px;color:#6b7280;font-size:10px;line-height:1.5}
+@media(max-width:900px){.topbar{padding:10px 12px}.brand{font-size:15px}.brand-sub{display:none}.layout{grid-template-columns:1fr;padding:9px}.work-card{position:static}.canvas-shell{min-height:43vh}.canvas-shell canvas{max-height:56vh}.sidebar{gap:9px}.palette{grid-template-columns:repeat(5,1fr)}.swatch .label{display:none}.scheme-notice{width:100%;margin-left:0}.part-grid{grid-template-columns:repeat(5,1fr)}.part-chip{font-size:10px;padding:8px 4px}}
+
+</style>
+  <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow-models/deeplab@0.2.2/dist/deeplab.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script defer>
+'use strict';
+
+const PARTS = [
+  {id:'wall', name:'外壁', color:'#d2c3aa'},
+  {id:'roof', name:'屋根', color:'#4d5257'},
+  {id:'gutter', name:'雨樋', color:'#333333'},
+  {id:'fascia', name:'破風', color:'#45413d'},
+  {id:'soffit', name:'軒天', color:'#e7e3da'},
+  {id:'trim', name:'幕板/付帯', color:'#595550'},
+  {id:'door', name:'玄関まわり', color:'#665448'}
+];
+
+// NOTE: Hex values below are screen approximations for simulation only.
+// Manufacturer codes are retained for proposal management, not colorimetry.
+const PALETTES = {
+  '日本ペイント ND': [
+    ['ND-503','ミルキーホワイト','#e9e4d8'],['ND-370','シルク','#dcd5c6'],['ND-461','ND-461','#cfc8b9'],
+    ['ND-155','カシミア','#c8b59c'],['ND-111','エンジェルホイップ','#e8dcc8'],['ND-108','サハラ','#d5c19e'],
+    ['ND-371','バーチグレー','#c8c3b8'],['ND-105','エッグシェル','#d2c3aa'],['ND-110','ND-110','#d7cab8'],
+    ['ND-104','ND-104','#c9bca7'],['ND-112','ND-112','#b9aa92'],['ND-500','ND-500','#e7e1d5'],
+    ['ND-103','ND-103','#b8bab6'],['ND-102','ND-102','#a8aaa7'],['ND-013','ND-013','#8a8c88'],
+    ['ND-342','ND-342','#9d8b78'],['ND-184','ND-184','#aa8d73'],['ND-375','ND-375','#76756f']
+  ],
+  '屋根・付帯': [
+    ['ROOF-DG','ダークグレー','#444a4f'],['ROOF-BK','ブラック','#25282b'],['ROOF-BR','ダークブラウン','#493b34'],
+    ['ROOF-GR','モスグリーン','#4d5749'],['ROOF-NV','ネイビー','#34444e'],['TRIM-WH','ホワイト','#eeeeea'],
+    ['TRIM-CH','チャコール','#484b4d'],['TRIM-BR','ブラウン','#665144'],['TRIM-BK','ブラック','#292929']
+  ],
+  '人気ニュートラル': [
+    ['SIM-01','ウォームホワイト','#eee9df'],['SIM-02','アイボリー','#dfd1b8'],['SIM-03','サンドベージュ','#c8b79c'],
+    ['SIM-04','グレージュ','#b7aea3'],['SIM-05','ライトグレー','#c7c9c8'],['SIM-06','ミドルグレー','#929697'],
+    ['SIM-07','チャコール','#505456'],['SIM-08','モカ','#9a806d'],['SIM-09','オリーブ','#757b65'],
+    ['SIM-10','ブルーグレー','#788994'],['SIM-11','ネイビー','#354751'],['SIM-12','テラコッタ','#aa725a']
+  ]
+};
+
+const $ = id => document.getElementById(id);
+const photoInput=$('photoInput'), projectInput=$('projectInput'), canvas=$('mainCanvas'), ctx=canvas.getContext('2d',{willReadFrequently:true});
+const canvasShell=$('canvasShell'), emptyState=$('emptyState'), canvasTip=$('canvasTip'), canvasBadge=$('canvasBadge'), aiOverlay=$('aiOverlay'), aiStatus=$('aiStatus');
+const aiBtn=$('aiBtn'), polygonBtn=$('polygonBtn'), finishPolygonBtn=$('finishPolygonBtn'), undoPointBtn=$('undoPointBtn'), beforeBtn=$('beforeBtn'), clearLayersBtn=$('clearLayersBtn');
+const partGrid=$('partGrid'), partSelect=$('partSelect'), paletteTabs=$('paletteTabs'), paletteEl=$('palette'), layersEl=$('layers');
+const brandInput=$('brandInput'), codeInput=$('codeInput'), customColor=$('customColor'), strength=$('strength'), strengthLabel=$('strengthLabel'), applyColorBtn=$('applyColorBtn');
+const customerName=$('customerName'), siteAddress=$('siteAddress'), companyName=$('companyName'), staffName=$('staffName'), proposalMemo=$('proposalMemo'), pdfBtn=$('pdfBtn');
+const saveProjectBtn=$('saveProjectBtn'), schemeNotice=$('schemeNotice');
+
+let original = document.createElement('canvas');
+let octx = original.getContext('2d',{willReadFrequently:true});
+let imageLoaded=false, showingBefore=false, polygonMode=false, currentPoints=[];
+let activePart='wall', selectedLayerId=null, currentPalette='日本ペイント ND';
+let layers=[], schemes={A:null,B:null,C:null};
+let aiModel=null;
+
+function init(){
+  renderPartControls(); renderPaletteTabs(); renderPalette(); wire();
+  if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+function wire(){
+  photoInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadPhotoFile(f);});
+  projectInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadProjectFile(f);});
+  aiBtn.addEventListener('click', runAI);
+  polygonBtn.addEventListener('click', startPolygon);
+  finishPolygonBtn.addEventListener('click', finishPolygon);
+  undoPointBtn.addEventListener('click', ()=>{currentPoints.pop(); updatePolygonButtons(); render();});
+  beforeBtn.addEventListener('pointerdown',()=>setBefore(true));
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>beforeBtn.addEventListener(ev,()=>setBefore(false)));
+  clearLayersBtn.addEventListener('click',()=>{if(confirm('作成した部位範囲をすべて削除しますか？')){layers=[];selectedLayerId=null;renderLayers();render();updateReady();}});
+  canvas.addEventListener('pointerdown', canvasPointerDown);
+  strength.addEventListener('input',()=>strengthLabel.textContent=strength.value+'%');
+  customColor.addEventListener('input',()=>document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active')));
+  applyColorBtn.addEventListener('click', applyCurrentPaint);
+  pdfBtn.addEventListener('click', createProposalPDF);
+  saveProjectBtn.addEventListener('click', saveProject);
+  document.querySelectorAll('.scheme-group').forEach(g=>{
+    g.querySelector('.save-scheme').addEventListener('click',()=>saveScheme(g.dataset.scheme));
+    g.querySelector('.load-scheme').addEventListener('click',()=>loadScheme(g.dataset.scheme));
+  });
+  [customerName,siteAddress,companyName,staffName,proposalMemo].forEach(el=>el.addEventListener('change',()=>{}));
+}
+
+function renderPartControls(){
+  partGrid.innerHTML=''; partSelect.innerHTML='';
+  PARTS.forEach(p=>{
+    const c=document.createElement('button'); c.className='part-chip'+(p.id===activePart?' active':''); c.textContent=p.name;
+    c.onclick=()=>setActivePart(p.id); partGrid.appendChild(c);
+    const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; partSelect.appendChild(o);
+  });
+  partSelect.value=activePart; partSelect.onchange=()=>setActivePart(partSelect.value);
+}
+function setActivePart(id){
+  activePart=id; partSelect.value=id;
+  document.querySelectorAll('.part-chip').forEach((x,i)=>x.classList.toggle('active',PARTS[i].id===id));
+  const found=layers.find(l=>l.part===id); if(found) selectLayer(found.id); else {selectedLayerId=null;renderLayers();}
+}
+
+function renderPaletteTabs(){
+  paletteTabs.innerHTML=''; Object.keys(PALETTES).forEach(name=>{
+    const b=document.createElement('button'); b.className='tab'+(name===currentPalette?' active':''); b.textContent=name;
+    b.onclick=()=>{currentPalette=name;renderPaletteTabs();renderPalette();}; paletteTabs.appendChild(b);
+  });
+}
+function renderPalette(){
+  paletteEl.innerHTML='';
+  PALETTES[currentPalette].forEach(([code,name,hex])=>{
+    const d=document.createElement('button'); d.className='swatch'; d.style.setProperty('--c',hex); d.title=`${code} ${name}`;
+    d.innerHTML=`<span class="label">${code}<br>${name}</span>`;
+    d.onclick=()=>{document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));d.classList.add('active'); brandInput.value=currentPalette.startsWith('日本ペイント')?'日本ペイント':currentPalette;codeInput.value=code;customColor.value=hex;};
+    paletteEl.appendChild(d);
+  });
+}
+
+async function loadPhotoFile(file){
+  const url=URL.createObjectURL(file); const img=new Image();
+  img.onload=()=>{
+    const maxDim=1400, scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
+    const w=Math.round(img.naturalWidth*scale), h=Math.round(img.naturalHeight*scale);
+    setupImageCanvas(w,h); octx.drawImage(img,0,0,w,h); URL.revokeObjectURL(url);
+    resetProjectVisuals(); render();
+  }; img.onerror=()=>alert('写真を読み込めませんでした。'); img.src=url;
+}
+function setupImageCanvas(w,h){
+  canvas.width=original.width=w; canvas.height=original.height=h; canvas.hidden=false; emptyState.hidden=true; imageLoaded=true;
+}
+function resetProjectVisuals(){
+  layers=[];schemes={A:null,B:null,C:null};selectedLayerId=null;currentPoints=[];polygonMode=false;
+  document.querySelectorAll('.scheme-group').forEach(g=>g.classList.remove('saved'));
+  schemeNotice.textContent='未保存'; renderLayers(); updateReady();
+}
+
+function updateReady(){
+  [aiBtn,polygonBtn,beforeBtn,clearLayersBtn,pdfBtn,saveProjectBtn].forEach(b=>b.disabled=!imageLoaded);
+  applyColorBtn.disabled=!imageLoaded || (!selectedLayerId && !layers.some(l=>l.part===activePart));
+  clearLayersBtn.disabled=!imageLoaded || layers.length===0; pdfBtn.disabled=!imageLoaded || layers.length===0;
+}
+function setBefore(v){showingBefore=v;canvasBadge.hidden=!v;canvasBadge.textContent='施工前';render();}
+
+function startPolygon(){
+  if(!imageLoaded)return; polygonMode=true; currentPoints=[]; canvasTip.hidden=false; canvasTip.textContent=`${partName(activePart)}の角を順番にタップ → 「範囲を確定」`;
+  updatePolygonButtons(); render();
+}
+function canvasPointerDown(e){
+  if(!polygonMode || showingBefore)return; e.preventDefault(); const r=canvas.getBoundingClientRect();
+  currentPoints.push({x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}); updatePolygonButtons(); render();
+}
+function updatePolygonButtons(){finishPolygonBtn.disabled=currentPoints.length<3;undoPointBtn.disabled=currentPoints.length===0;}
+function finishPolygon(){
+  if(currentPoints.length<3)return; const mask=polygonToMask(currentPoints,canvas.width,canvas.height);
+  addLayer({part:activePart,source:'手動',mask,points:currentPoints.map(p=>({...p})),color:customColor.value,brand:brandInput.value.trim()||'カスタム',code:codeInput.value.trim()||'任意色',strength:Number(strength.value)/100});
+  polygonMode=false;currentPoints=[];canvasTip.hidden=true;updatePolygonButtons();render();
+}
+function polygonToMask(points,w,h){
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.beginPath();points.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.closePath();x.fill();
+  const d=x.getImageData(0,0,w,h).data,m=new Uint8Array(w*h);for(let i=0,j=0;i<d.length;i+=4,j++)m[j]=d[i+3]>0?1:0;return m;
+}
+
+async function runAI(){
+  if(!imageLoaded)return; aiOverlay.hidden=false;aiBtn.disabled=true;aiStatus.textContent='AIモデルを準備しています…';
+  try{
+    if(!window.tf || !window.deeplab) throw new Error('AIライブラリを読み込めません。通信環境を確認してください。');
+    if(!aiModel){ await tf.ready(); aiStatus.textContent='建物認識モデルを読み込んでいます…'; aiModel=await deeplab.load({base:'cityscapes',quantizationBytes:1}); }
+    aiStatus.textContent='住宅写真を解析しています…';
+    const aiCanvas=document.createElement('canvas'); const max=640,sc=Math.min(1,max/Math.max(original.width,original.height)); aiCanvas.width=Math.max(1,Math.round(original.width*sc));aiCanvas.height=Math.max(1,Math.round(original.height*sc));
+    aiCanvas.getContext('2d').drawImage(original,0,0,aiCanvas.width,aiCanvas.height);
+    const result=await aiModel.segment(aiCanvas);
+    aiStatus.textContent='建物領域から部位候補を作っています…';
+    const lowMask=extractBuildingComponent(result);
+    if(!lowMask) throw new Error('建物を認識できませんでした。手動範囲指定を使ってください。');
+    const base=upscaleMask(lowMask.mask,lowMask.w,lowMask.h,canvas.width,canvas.height);
+    const generated=derivePartMasks(base,canvas.width,canvas.height);
+    // remove previous AI generated layers only, keep manual corrections
+    layers=layers.filter(l=>l.source!=='AI推定');
+    const defaults={wall:['#d2c3aa','日本ペイント','ND-105'],roof:['#444a4f','屋根標準','ダークグレー'],gutter:['#333333','付帯部','チャコール'],fascia:['#45413d','付帯部','ダーク'],soffit:['#e7e3da','付帯部','ホワイト']};
+    ['wall','roof','soffit','fascia','gutter'].forEach(part=>{
+      const mask=generated[part]; if(mask && mask.some(v=>v)){const [color,brand,code]=defaults[part];addLayer({part,source:'AI推定',mask,color,brand,code,strength:.82},false);}
+    });
+    renderLayers();updateReady();render();schemeNotice.textContent='AI候補を作成しました。必要な箇所は手動で補正してください。';
+  }catch(err){console.error(err);alert(err.message||'AI解析に失敗しました。手動範囲指定はそのまま使用できます。');}
+  finally{aiOverlay.hidden=true;aiBtn.disabled=false;}
+}
+
+function extractBuildingComponent(result){
+  const legend=result.legend||{}, entry=Object.entries(legend).find(([k])=>k.toLowerCase()==='building') || Object.entries(legend).find(([k])=>k.toLowerCase().includes('building'));
+  if(!entry)return null; const rgb=entry[1],w=result.width,h=result.height,map=result.segmentationMap;
+  const bin=new Uint8Array(w*h); let hits=0; for(let i=0,p=0;i<map.length;i+=4,p++){if(map[i]===rgb[0]&&map[i+1]===rgb[1]&&map[i+2]===rgb[2]){bin[p]=1;hits++;}}
+  if(hits<50)return null;
+  const seen=new Uint8Array(bin.length);let best=null;const qx=new Int32Array(bin.length),qy=new Int32Array(bin.length);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const idx=y*w+x;if(!bin[idx]||seen[idx])continue;let head=0,tail=0,count=0,minX=x,maxX=x,minY=y,maxY=y;qx[tail]=x;qy[tail++]=y;seen[idx]=1;
+    while(head<tail){const cx=qx[head],cy=qy[head++];count++;if(cx<minX)minX=cx;if(cx>maxX)maxX=cx;if(cy<minY)minY=cy;if(cy>maxY)maxY=cy;
+      const ns=[[cx-1,cy],[cx+1,cy],[cx,cy-1],[cx,cy+1]];for(const [nx,ny] of ns){if(nx<0||ny<0||nx>=w||ny>=h)continue;const ni=ny*w+nx;if(bin[ni]&&!seen[ni]){seen[ni]=1;qx[tail]=nx;qy[tail++]=ny;}}
+    }
+    const containsCenter=minX<w*.55&&maxX>w*.45&&minY<h*.72&&maxY>h*.30; const score=count*(containsCenter?1.35:1);
+    if(!best||score>best.score)best={score,count,minX,maxX,minY,maxY,coords:tail};
+  }
+  if(!best)return null;
+  // second pass: keep component with same bounding/size score target by flood finding the best component again
+  seen.fill(0); let winnerMask=null,winnerScore=-1;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const idx=y*w+x;if(!bin[idx]||seen[idx])continue;let head=0,tail=0,count=0,minX=x,maxX=x,minY=y,maxY=y;const inds=[];qx[tail]=x;qy[tail++]=y;seen[idx]=1;
+    while(head<tail){const cx=qx[head],cy=qy[head++],ci=cy*w+cx;inds.push(ci);count++;if(cx<minX)minX=cx;if(cx>maxX)maxX=cx;if(cy<minY)minY=cy;if(cy>maxY)maxY=cy;
+      const ns=[[cx-1,cy],[cx+1,cy],[cx,cy-1],[cx,cy+1]];for(const [nx,ny] of ns){if(nx<0||ny<0||nx>=w||ny>=h)continue;const ni=ny*w+nx;if(bin[ni]&&!seen[ni]){seen[ni]=1;qx[tail]=nx;qy[tail++]=ny;}}
+    }
+    const containsCenter=minX<w*.55&&maxX>w*.45&&minY<h*.72&&maxY>h*.30;const score=count*(containsCenter?1.35:1);
+    if(score>winnerScore){winnerScore=score;winnerMask=new Uint8Array(w*h);for(const i of inds)winnerMask[i]=1;}
+  }
+  return winnerMask?{mask:winnerMask,w,h}:null;
+}
+
+function upscaleMask(src,sw,sh,dw,dh){const out=new Uint8Array(dw*dh);for(let y=0;y<dh;y++){const sy=Math.min(sh-1,Math.floor(y*sh/dh));for(let x=0;x<dw;x++){const sx=Math.min(sw-1,Math.floor(x*sw/dw));out[y*dw+x]=src[sy*sw+sx];}}return out;}
+function derivePartMasks(base,w,h){
+  let minX=w,maxX=0,minY=h,maxY=0,count=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(base[y*w+x]){count++;if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}
+  if(!count)return {}; const span=Math.max(1,maxY-minY);const roof=new Uint8Array(base.length),wall=new Uint8Array(base.length),gutter=new Uint8Array(base.length),fascia=new Uint8Array(base.length),soffit=new Uint8Array(base.length);
+  for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){const i=y*w+x;if(!base[i])continue;const r=(y-minY)/span;if(r<.30)roof[i]=1;else wall[i]=1;if(r>=.255&&r<.285)fascia[i]=1;if(r>=.285&&r<.31)gutter[i]=1;if(r>=.31&&r<.355)soffit[i]=1;}
+  return {wall,roof,gutter,fascia,soffit};
+}
+
+function addLayer(data,select=true){
+  const id='L'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);layers.push({id,part:data.part,source:data.source||'手動',mask:data.mask,points:data.points||null,color:data.color||PARTS.find(p=>p.id===data.part)?.color||'#cccccc',brand:data.brand||'カスタム',code:data.code||'任意色',strength:data.strength??.82,visible:data.visible!==false});
+  if(select)selectLayer(id); else renderLayers();updateReady();
+}
+function selectLayer(id){
+  const l=layers.find(x=>x.id===id);if(!l)return;selectedLayerId=id;activePart=l.part;partSelect.value=l.part;document.querySelectorAll('.part-chip').forEach((x,i)=>x.classList.toggle('active',PARTS[i].id===l.part));brandInput.value=l.brand;codeInput.value=l.code;customColor.value=l.color;strength.value=Math.round((l.strength??.82)*100);strengthLabel.textContent=strength.value+'%';renderLayers();updateReady();render();
+}
+function applyCurrentPaint(){
+  let targets=selectedLayerId?layers.filter(l=>l.id===selectedLayerId):layers.filter(l=>l.part===activePart);if(!targets.length)return;
+  targets.forEach(l=>{l.color=customColor.value;l.brand=brandInput.value.trim()||'カスタム';l.code=codeInput.value.trim()||'任意色';l.strength=Number(strength.value)/100;});renderLayers();render();schemeNotice.textContent='配色を変更しました（A/B/C案へ保存可能）';
+}
+function renderLayers(){
+  layersEl.innerHTML='';if(!layers.length){layersEl.innerHTML='<div class="muted">まだ範囲がありません。</div>';updateReady();return;}
+  layers.forEach(l=>{const row=document.createElement('div');row.className='layer'+(l.id===selectedLayerId?' selected':'');row.innerHTML=`<div class="layer-dot" style="--c:${l.color}"></div><div class="layer-main"><div class="layer-title">${partName(l.part)} <span class="muted">${l.source}</span></div><div class="layer-sub">${escapeHtml(l.brand)} / ${escapeHtml(l.code)}</div></div><div class="layer-actions"><button class="toggle">${l.visible?'表示':'非表示'}</button><button class="del">削除</button></div>`;
+    row.onclick=e=>{if(!e.target.closest('button'))selectLayer(l.id);};row.querySelector('.toggle').onclick=e=>{e.stopPropagation();l.visible=!l.visible;renderLayers();render();};row.querySelector('.del').onclick=e=>{e.stopPropagation();layers=layers.filter(x=>x.id!==l.id);if(selectedLayerId===l.id)selectedLayerId=null;renderLayers();render();updateReady();};layersEl.appendChild(row);});updateReady();
+}
+function partName(id){return PARTS.find(p=>p.id===id)?.name||id;}
+
+function render(){
+  if(!imageLoaded)return;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(original,0,0);
+  if(!showingBefore){const img=ctx.getImageData(0,0,canvas.width,canvas.height),d=img.data;for(const l of layers)if(l.visible)applyLayerPixels(d,l);ctx.putImageData(img,0,0);}
+  if(polygonMode&&currentPoints.length&&!showingBefore)drawPolygonGuide();
+}
+function applyLayerPixels(data,l){
+  const [tr,tg,tb]=hexToRgb(l.color),th=rgbToHsl(tr,tg,tb),s=l.strength??.82,m=l.mask;for(let p=0,i=0;p<m.length;p++,i+=4){if(!m[p])continue;const oh=rgbToHsl(data[i],data[i+1],data[i+2]);const light=Math.max(.035,Math.min(.97,th[2]*(.55+oh[2]*.95)));const sat=Math.min(1,th[1]*.9+oh[1]*.1);const [nr,ng,nb]=hslToRgb(th[0],sat,light);data[i]=Math.round(data[i]*(1-s)+nr*s);data[i+1]=Math.round(data[i+1]*(1-s)+ng*s);data[i+2]=Math.round(data[i+2]*(1-s)+nb*s);}
+}
+function drawPolygonGuide(){ctx.save();ctx.beginPath();currentPoints.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineWidth=Math.max(3,canvas.width/420);ctx.strokeStyle='#00a3ff';ctx.setLineDash([12,8]);ctx.stroke();ctx.setLineDash([]);for(const [i,p] of currentPoints.entries()){ctx.beginPath();ctx.arc(p.x,p.y,Math.max(6,canvas.width/200),0,Math.PI*2);ctx.fillStyle=i?'#00a3ff':'#111827';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}ctx.restore();}
+
+function snapshotState(){return layers.map(l=>({id:l.id,color:l.color,brand:l.brand,code:l.code,strength:l.strength,visible:l.visible}));}
+function restoreState(state){for(const s of state){const l=layers.find(x=>x.id===s.id);if(l)Object.assign(l,s);}renderLayers();render();}
+function saveScheme(k){if(!layers.length)return;schemes[k]={savedAt:new Date().toISOString(),layers:snapshotState()};document.querySelector(`.scheme-group[data-scheme="${k}"]`).classList.add('saved');schemeNotice.textContent=`${k}案を保存しました`;}
+function loadScheme(k){if(!schemes[k]){alert(`${k}案はまだ保存されていません。`);return;}restoreState(schemes[k].layers);schemeNotice.textContent=`${k}案を呼び出しました`;}
+function captureCurrent(){const prev=showingBefore;showingBefore=false;render();const u=canvas.toDataURL('image/jpeg',.88);showingBefore=prev;render();return u;}
+function captureBefore(){return original.toDataURL('image/jpeg',.88);}
+function captureScheme(k){if(!schemes[k])return null;const prev=snapshotState();for(const s of schemes[k].layers){const l=layers.find(x=>x.id===s.id);if(l)Object.assign(l,s);}const url=captureCurrent();for(const s of prev){const l=layers.find(x=>x.id===s.id);if(l)Object.assign(l,s);}render();return url;}
+
+async function createProposalPDF(){
+  if(!imageLoaded||!layers.length)return; pdfBtn.disabled=true;pdfBtn.textContent='提案書を作成中…';
+  try{
+    const images=[{label:'施工前',url:captureBefore()}];['A','B','C'].forEach(k=>{const u=captureScheme(k);if(u)images.push({label:`${k}案`,url:u});});if(images.length===1)images.push({label:'現在案',url:captureCurrent()});
+    const pc=document.createElement('canvas');pc.width=1240;pc.height=1754;const p=pc.getContext('2d');p.fillStyle='#fff';p.fillRect(0,0,pc.width,pc.height);p.fillStyle='#111827';p.font='bold 48px sans-serif';p.fillText('住宅塗り替え カラーご提案書',70,82);p.font='22px sans-serif';p.fillStyle='#374151';
+    const date=new Date().toLocaleDateString('ja-JP');p.fillText(`お客様：${customerName.value||'　　　　　　様'}`,70,132);p.fillText(`現場：${siteAddress.value||'未入力'}`,70,170);p.fillText(`作成：${date}　${companyName.value||''} ${staffName.value?'/ '+staffName.value:''}`,70,208);
+    const loaded=[];for(const it of images)loaded.push({label:it.label,img:await loadImage(it.url)});const slots=[[70,265],[640,265],[70,750],[640,750]];const boxW=530,boxH=390;
+    for(let i=0;i<Math.min(4,loaded.length);i++){const [x,y]=slots[i];p.strokeStyle='#d1d5db';p.lineWidth=2;p.strokeRect(x,y,boxW,boxH);drawImageContain(p,loaded[i].img,x+8,y+8,boxW-16,boxH-46);p.fillStyle='#111827';p.font='bold 24px sans-serif';p.fillText(loaded[i].label,x+12,y+boxH-13);}
+    let y=loaded.length<=2?750:1190;p.fillStyle='#111827';p.font='bold 28px sans-serif';p.fillText('採用色・部位',70,y);y+=40;p.font='20px sans-serif';
+    const refScheme=schemes.A?.layers||snapshotState();const byPart=[];for(const part of PARTS){const ls=refScheme.map(s=>({s,l:layers.find(x=>x.id===s.id)})).filter(x=>x.l?.part===part.id);if(ls.length){const x=ls[0];byPart.push({part:part.name,brand:x.s.brand,code:x.s.code,color:x.s.color});}}
+    for(const row of byPart.slice(0,7)){p.fillStyle=row.color;p.fillRect(72,y-21,28,28);p.strokeStyle='#9ca3af';p.strokeRect(72,y-21,28,28);p.fillStyle='#111827';p.fillText(`${row.part}　${row.brand} / ${row.code}`,115,y);y+=34;}
+    if(proposalMemo.value){y+=12;p.font='bold 22px sans-serif';p.fillText('提案メモ',70,y);y+=30;p.font='18px sans-serif';drawWrappedText(p,proposalMemo.value,70,y,1090,27);}
+    p.fillStyle='#6b7280';p.font='16px sans-serif';p.fillText('※本資料の画面色はシミュレーションです。最終的な色決定は実物の塗板・色見本帳でご確認ください。',70,1692);
+    const filename=safeFileName((customerName.value||'お客様')+'_塗り替えカラー提案書');
+    if(window.jspdf?.jsPDF){const pdf=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});pdf.addImage(pc.toDataURL('image/jpeg',.92),'JPEG',0,0,210,297,undefined,'FAST');pdf.save(filename+'.pdf');}
+    else{const a=document.createElement('a');a.href=pc.toDataURL('image/png');a.download=filename+'.png';a.click();alert('PDFライブラリを読み込めなかったため、提案書PNGで保存しました。');}
+  }catch(err){console.error(err);alert('提案書の作成に失敗しました。');}
+  finally{pdfBtn.disabled=false;pdfBtn.textContent='提案書PDFを作成';}
+}
+function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+function drawImageContain(c,img,x,y,w,h){const s=Math.min(w/img.width,h/img.height),dw=img.width*s,dh=img.height*s;c.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);}
+function drawWrappedText(c,text,x,y,maxW,lineH){let line='';for(const ch of text){const t=line+ch;if(c.measureText(t).width>maxW){c.fillText(line,x,y);line=ch;y+=lineH;}else line=t;}if(line)c.fillText(line,x,y);return y;}
+
+function saveProject(){
+  try{const data={version:1,savedAt:new Date().toISOString(),image:captureBefore(),w:canvas.width,h:canvas.height,layers:layers.map(l=>({id:l.id,part:l.part,source:l.source,color:l.color,brand:l.brand,code:l.code,strength:l.strength,visible:l.visible,points:l.points,mask:packMask(l.mask)})),schemes,customer:{customerName:customerName.value,siteAddress:siteAddress.value,companyName:companyName.value,staffName:staffName.value,proposalMemo:proposalMemo.value}};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=safeFileName((customerName.value||'住宅')+'_塗り替え案件')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}catch(e){console.error(e);alert('案件保存に失敗しました。');}
+}
+async function loadProjectFile(file){
+  try{const data=JSON.parse(await file.text());if(!data.image||!data.w||!data.h)throw new Error('形式が違います');const img=await loadImage(data.image);setupImageCanvas(data.w,data.h);octx.clearRect(0,0,data.w,data.h);octx.drawImage(img,0,0,data.w,data.h);layers=(data.layers||[]).map(l=>({...l,mask:unpackMask(l.mask,data.w*data.h)}));schemes=data.schemes||{A:null,B:null,C:null};const c=data.customer||{};customerName.value=c.customerName||'';siteAddress.value=c.siteAddress||'';companyName.value=c.companyName||'';staffName.value=c.staffName||'';proposalMemo.value=c.proposalMemo||'';document.querySelectorAll('.scheme-group').forEach(g=>g.classList.toggle('saved',!!schemes[g.dataset.scheme]));selectedLayerId=null;polygonMode=false;currentPoints=[];canvasTip.hidden=true;renderLayers();updateReady();render();schemeNotice.textContent='案件を読み込みました';}catch(e){console.error(e);alert('案件ファイルを読み込めませんでした。');}
+}
+function packMask(mask){const bytes=new Uint8Array(Math.ceil(mask.length/8));for(let i=0;i<mask.length;i++)if(mask[i])bytes[i>>3]|=1<<(i&7);return bytesToBase64(bytes);}
+function unpackMask(b64,len){const bytes=base64ToBytes(b64),mask=new Uint8Array(len);for(let i=0;i<len;i++)mask[i]=(bytes[i>>3]>>(i&7))&1;return mask;}
+function bytesToBase64(bytes){let out='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)out+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(out);}
+function base64ToBytes(s){const b=atob(s),out=new Uint8Array(b.length);for(let i=0;i<b.length;i++)out[i]=b.charCodeAt(i);return out;}
+
+function hexToRgb(hex){const v=parseInt(hex.slice(1),16);return[(v>>16)&255,(v>>8)&255,v&255];}
+function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;if(max!==min){const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4;}h/=6;}return[h,s,l];}
+function hslToRgb(h,s,l){let r,g,b;if(s===0)r=g=b=l;else{const f=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<.5)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;r=f(p,q,h+1/3);g=f(p,q,h);b=f(p,q,h-1/3);}return[r*255,g*255,b*255];}
+function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
+function safeFileName(s){return String(s).replace(/[\\/:*?"<>|]/g,'_').slice(0,80);}
+
+init();
+
+</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brandbox">
+    <div class="brand">住宅塗り替えカラー提案 Pro</div>
+    <div class="brand-sub">写真 → AI候補抽出 → 配色比較 → 提案書PDF</div>
+  </div>
+  <div class="top-actions">
+    <label class="btn primary" for="photoInput">写真を撮る / 選ぶ</label>
+    <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="card work-card">
+    <div class="canvas-shell" id="canvasShell">
+      <div class="empty" id="emptyState">
+        <strong>住宅写真を読み込んでください</strong>
+        <span>正面〜斜め45°程度で、建物全体が写っている写真がAI抽出しやすいです。</span>
+      </div>
+      <canvas id="mainCanvas" hidden></canvas>
+      <div class="canvas-badge" id="canvasBadge" hidden></div>
+      <div class="canvas-tip" id="canvasTip" hidden>角を順番にタップしてください。3点以上で範囲を確定できます。</div>
+      <div class="ai-overlay" id="aiOverlay" hidden>
+        <div class="spinner"></div>
+        <b id="aiStatus">AIで建物を解析しています…</b>
+        <small>初回はモデルの読み込みで通信が発生します。</small>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button id="aiBtn" class="primary" disabled>AIで部位候補を作る</button>
+      <button id="polygonBtn" disabled>手動で範囲指定</button>
+      <button id="finishPolygonBtn" disabled>範囲を確定</button>
+      <button id="undoPointBtn" disabled>1点戻す</button>
+      <button id="beforeBtn" disabled>施工前を長押し</button>
+      <button id="clearLayersBtn" class="danger" disabled>範囲を全削除</button>
+    </div>
+
+    <div class="scheme-bar">
+      <div class="scheme-title">配色案</div>
+      <div class="scheme-group" data-scheme="A"><b>A案</b><button class="mini save-scheme">保存</button><button class="mini load-scheme">呼出</button></div>
+      <div class="scheme-group" data-scheme="B"><b>B案</b><button class="mini save-scheme">保存</button><button class="mini load-scheme">呼出</button></div>
+      <div class="scheme-group" data-scheme="C"><b>C案</b><button class="mini save-scheme">保存</button><button class="mini load-scheme">呼出</button></div>
+      <span id="schemeNotice" class="scheme-notice">未保存</span>
+    </div>
+  </section>
+
+  <aside class="sidebar">
+    <section class="card panel">
+      <h2>1. 塗り替える部位</h2>
+      <div class="part-grid" id="partGrid"></div>
+      <div class="field compact">
+        <label>手動範囲の部位</label>
+        <select id="partSelect"></select>
+      </div>
+      <div class="notice">AI候補は外壁を中心に推定し、屋根・雨樋・破風・軒天は建物形状から候補を作ります。最終確認は手動で行ってください。</div>
+    </section>
+
+    <section class="card panel">
+      <h2>2. 色見本</h2>
+      <div class="tabs" id="paletteTabs"></div>
+      <div class="palette" id="palette"></div>
+      <div class="field-row">
+        <div class="field">
+          <label>メーカー / 系統</label>
+          <input id="brandInput" value="日本ペイント">
+        </div>
+        <div class="field">
+          <label>色番号</label>
+          <input id="codeInput" value="ND-105">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>表示色</label>
+          <input id="customColor" type="color" value="#d2c3aa">
+        </div>
+        <div class="field">
+          <label>色の強さ <span id="strengthLabel">82%</span></label>
+          <input id="strength" type="range" min="30" max="100" value="82">
+        </div>
+      </div>
+      <button id="applyColorBtn" class="primary full" disabled>選択中の部位にこの色を適用</button>
+      <div class="notice">メーカー色番号は管理用です。画面色は近似表示で、実塗料の色・艶・下地・日照とは一致しません。</div>
+    </section>
+
+    <section class="card panel">
+      <h2>3. 部位レイヤー</h2>
+      <div id="layers" class="layers"><div class="muted">まだ範囲がありません。</div></div>
+    </section>
+
+    <section class="card panel">
+      <h2>4. お客様・提案書</h2>
+      <div class="field"><label>お客様名</label><input id="customerName" placeholder="例：山田 太郎 様"></div>
+      <div class="field"><label>現場住所</label><input id="siteAddress" placeholder="例：○○県○○市…"></div>
+      <div class="field-row">
+        <div class="field"><label>施工会社</label><input id="companyName" placeholder="会社名"></div>
+        <div class="field"><label>担当者</label><input id="staffName" placeholder="担当者名"></div>
+      </div>
+      <div class="field"><label>提案メモ</label><textarea id="proposalMemo" rows="3" placeholder="例：外壁は落ち着いたグレージュ、付帯部はチャコールで統一"></textarea></div>
+      <button id="pdfBtn" class="primary full" disabled>提案書PDFを作成</button>
+    </section>
+
+    <section class="card panel">
+      <h2>5. 案件保存</h2>
+      <div class="button-row">
+        <button id="saveProjectBtn" disabled>案件ファイル保存</button>
+        <label class="btn" for="projectInput">案件を読み込む</label>
+        <input id="projectInput" type="file" accept="application/json,.json" hidden>
+      </div>
+      <div class="muted small">写真・範囲・配色案・顧客情報を1つのJSONに保存します。</div>
+    </section>
+  </aside>
+</main>
+
+<footer>
+  <b>注意：</b>カラーシミュレーションは提案用イメージです。正式な色決定は塗板・メーカー色見本帳など現物で確認してください。
+</footer>
+</body>
+</html>
