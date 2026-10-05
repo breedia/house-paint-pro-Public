@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>住宅塗り替えカラー提案 Pro</title>
   <style>
@@ -15,7 +18,8 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow-models/deeplab@0.2.2/dist/deeplab.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-  <script defer>
+  <script>
+document.addEventListener('DOMContentLoaded',()=>{
 'use strict';
 
 const PARTS = [
@@ -128,13 +132,39 @@ function renderPalette(){
 }
 
 async function loadPhotoFile(file){
-  const url=URL.createObjectURL(file); const img=new Image();
+  if(!file) return;
+  aiOverlay.hidden=false;
+  aiStatus.textContent='写真を読み込んでいます…';
+  const url=URL.createObjectURL(file);
+  const img=new Image();
+  let settled=false;
+  const cleanup=()=>{ if(settled) return; settled=true; clearTimeout(timer); URL.revokeObjectURL(url); aiOverlay.hidden=true; photoInput.value=''; };
+  const timer=setTimeout(()=>{
+    if(settled) return;
+    cleanup();
+    alert('写真の読み込みに時間がかかっています。もう一度撮影するか、写真ライブラリから選び直してください。HEIF/HEICで失敗する場合はスクリーンショット画像でも試せます。');
+  },20000);
   img.onload=()=>{
-    const maxDim=1400, scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
-    const w=Math.round(img.naturalWidth*scale), h=Math.round(img.naturalHeight*scale);
-    setupImageCanvas(w,h); octx.drawImage(img,0,0,w,h); URL.revokeObjectURL(url);
-    resetProjectVisuals(); render();
-  }; img.onerror=()=>alert('写真を読み込めませんでした。'); img.src=url;
+    try{
+      if(!img.naturalWidth || !img.naturalHeight) throw new Error('画像サイズを取得できませんでした');
+      const maxDim=1400, scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
+      const w=Math.max(1,Math.round(img.naturalWidth*scale)), h=Math.max(1,Math.round(img.naturalHeight*scale));
+      setupImageCanvas(w,h);
+      octx.clearRect(0,0,w,h);
+      octx.drawImage(img,0,0,w,h);
+      resetProjectVisuals();
+      render();
+      schemeNotice.textContent='写真を読み込みました';
+    }catch(err){
+      console.error(err);
+      alert('写真を処理できませんでした。別の写真を選び直してください。');
+    }finally{ cleanup(); }
+  };
+  img.onerror=()=>{
+    cleanup();
+    alert('写真を読み込めませんでした。iPhoneのHEIF/HEIC画像で失敗する場合は、写真のスクリーンショットを使うと確実です。');
+  };
+  img.src=url;
 }
 function setupImageCanvas(w,h){
   canvas.width=original.width=w; canvas.height=original.height=h; canvas.hidden=false; emptyState.hidden=true; imageLoaded=true;
@@ -307,6 +337,7 @@ function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;',
 function safeFileName(s){return String(s).replace(/[\\/:*?"<>|]/g,'_').slice(0,80);}
 
 init();
+});
 
 </script>
 </head>
@@ -314,7 +345,7 @@ init();
 <header class="topbar">
   <div class="brandbox">
     <div class="brand">住宅塗り替えカラー提案 Pro</div>
-    <div class="brand-sub">写真 → AI候補抽出 → 配色比較 → 提案書PDF</div>
+    <div class="brand-sub">写真 → AI候補抽出 → 配色比較 → 提案書PDF　v1.1</div>
   </div>
   <div class="top-actions">
     <label class="btn primary" for="photoInput">写真を撮る / 選ぶ</label>
