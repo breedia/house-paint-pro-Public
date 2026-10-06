@@ -78,15 +78,31 @@ let segmenter=null;
 let segmenterPromise=null;
 let transformersPromise=null;
 let photoGeneration=0;
+let photoLoading=false;
 
 function init(){
   renderPartControls(); renderPaletteTabs(); renderPalette(); wire();
-  if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  retireLegacyServiceWorker();
+}
+
+async function retireLegacyServiceWorker(){
+  // v2.0以前のService Workerが古いHTML/JSを返すと、更新後に読み込み不能になることがある。
+  // このアプリは単一HTMLで完結できるため、既存登録のみ解除して以後は登録しない。
+  if(!('serviceWorker' in navigator) || !location.protocol.startsWith('http')) return;
+  try{
+    const regs=await navigator.serviceWorker.getRegistrations();
+    const basePath=location.pathname.endsWith('/')?location.pathname:location.pathname.replace(/[^/]*$/,'');
+    await Promise.all(regs.filter(r=>{
+      try{return new URL(r.scope).pathname.startsWith(basePath);}catch(_){return false;}
+    }).map(r=>r.unregister()));
+  }catch(err){
+    console.warn('Service Worker cleanup skipped',err);
+  }
 }
 
 function wire(){
-  photoInput.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)loadPhotoFile(f);});
-  libraryInput.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)loadPhotoFile(f);});
+  photoInput.addEventListener('change',e=>{e.preventDefault();const f=e.target.files?.[0];if(f)loadPhotoFile(f);});
+  libraryInput.addEventListener('change',e=>{e.preventDefault();const f=e.target.files?.[0];if(f)loadPhotoFile(f);});
   projectInput.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)loadProjectFile(f);});
   aiBtn.addEventListener('click',()=>runSegmentationAI(photoGeneration,true));
   polygonBtn.addEventListener('click',startPolygon);
@@ -142,41 +158,69 @@ function renderPalette(){
 
 async function loadPhotoFile(file){
   if(!file) return;
-  ++photoGeneration;
+  const generation=++photoGeneration;
+  photoLoading=true;
   aiOverlay.style.removeProperty('display'); aiOverlay.hidden=false;
   aiStatus.textContent='写真を読み込んでいます…';
-  if(aiSubstatus) aiSubstatus.textContent='iPhone内の写真を処理しています。';
+  if(aiSubstatus) aiSubstatus.textContent='写真を安全な作業サイズへ変換しています。';
+
   const url=URL.createObjectURL(file);
   const img=new Image();
   let settled=false;
-  const cleanup=()=>{ if(settled) return; settled=true; clearTimeout(timer); URL.revokeObjectURL(url); aiOverlay.hidden=true; aiOverlay.style.display='none'; photoInput.value=''; libraryInput.value=''; };
-  const timer=setTimeout(()=>{
+  const cleanup=()=>{
     if(settled) return;
+    settled=true;
+    clearTimeout(timer);
+    URL.revokeObjectURL(url);
+    try{img.onload=null;img.onerror=null;img.src='';}catch(_){}
+    if(generation===photoGeneration){
+      photoLoading=false;
+      aiOverlay.hidden=true;
+      aiOverlay.style.display='none';
+    }
+    photoInput.value=''; libraryInput.value='';
+  };
+  const timer=setTimeout(()=>{
+    if(settled || generation!==photoGeneration) return;
     cleanup();
-    alert('写真の読み込みに時間がかかっています。もう一度撮影するか、写真ライブラリから選び直してください。HEIF/HEICで失敗する場合はスクリーンショット画像でも試せます。');
+    alert('写真の読み込みに時間がかかっています。もう一度選び直してください。HEIF/HEICで失敗する場合はスクリーンショット画像でも試せます。');
   },20000);
+
   img.onload=()=>{
     try{
+      if(generation!==photoGeneration){cleanup();return;}
       if(!img.naturalWidth || !img.naturalHeight) throw new Error('画像サイズを取得できませんでした');
-      const maxDim=1400, scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
-      const w=Math.max(1,Math.round(img.naturalWidth*scale)), h=Math.max(1,Math.round(img.naturalHeight*scale));
+
+      // iPhone Safariのメモリ落ち対策。表示/塗装用途では1100pxで十分な精度を確保する。
+      const mobile=/iP(?:hone|ad|od)|Android/i.test(navigator.userAgent);
+      const maxDim=mobile?1100:1400;
+      const scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
+      const w=Math.max(1,Math.round(img.naturalWidth*scale));
+      const h=Math.max(1,Math.round(img.naturalHeight*scale));
+
+      // 旧画像の大きな参照を先に切ってGCしやすくする。
+      sourcePixels=null;
+      layers=[]; samplePreviewMask=null; cleanupMask=null; imageHistory=[]; maskHistory=[];
+
       setupImageCanvas(w,h);
       octx.clearRect(0,0,w,h);
       octx.drawImage(img,0,0,w,h);
       sourcePixels=octx.getImageData(0,0,w,h).data;
       resetProjectVisuals();
       render();
-      const generation=photoGeneration;
-      schemeNotice.textContent='写真を読み込みました。AI外壁認識を開始します…';
+      schemeNotice.textContent='写真を読み込みました。必要なら「AI外壁認識」を押してください。';
       aiOverlay.hidden=true;
       emptyState.hidden=true;
-      setTimeout(()=>runSegmentationAI(generation,false),80);
+      // v2.1: 写真追加直後のAI自動実行を廃止。iPhone Safariの強制再読込を防ぐ。
     }catch(err){
       console.error(err);
-      alert('写真を処理できませんでした。別の写真を選び直してください。');
-    }finally{ cleanup(); }
+      if(generation===photoGeneration) alert('写真を処理できませんでした。別の写真を選び直してください。');
+    }finally{
+      cleanup();
+    }
   };
   img.onerror=()=>{
+    if(generation!==photoGeneration){cleanup();return;}
     cleanup();
     alert('写真を読み込めませんでした。iPhoneのHEIF/HEIC画像で失敗する場合は、写真のスクリーンショットを使うと確実です。');
   };
@@ -296,6 +340,14 @@ async function getSegmenter(){
   })().then(x=>{segmenter=x;return x;})
     .catch(err=>{segmenterPromise=null;throw err;});
   return segmenterPromise;
+}
+
+async function releaseSegmenter(){
+  const s=segmenter;
+  segmenter=null;
+  segmenterPromise=null;
+  if(!s)return;
+  try{if(typeof s.dispose==='function')await s.dispose();}catch(err){console.warn('AI model dispose skipped',err);}
 }
 
 function rawMaskToBinary(raw){
@@ -488,7 +540,10 @@ async function runSegmentationAI(generation=photoGeneration,userRequested=false)
       schemeNotice.textContent='AI自動認識に失敗しました。誤った範囲は表示せず、手動範囲指定に切り替えられます。';
     }
   }finally{
-    aiRunning=false;updateReady();
+    aiRunning=false;
+    // モバイルではAIモデルを保持し続けない。再実行時に再読込する代わりにページ落ちを防ぐ。
+    if(/iP(?:hone|ad|od)|Android/i.test(navigator.userAgent)) await releaseSegmenter();
+    updateReady();
   }
 }
 
@@ -590,7 +645,7 @@ if(new URLSearchParams(location.search).get('selftest')==='1')setTimeout(runSelf
 <header class="topbar">
   <div class="brandbox">
     <div class="brand">住宅塗り替えカラー提案 Pro</div>
-    <div class="brand-sub">写真 → AI認識 / 色抽出 / 手動補正 → 配色比較 → 提案書PDF　v2.0</div>
+    <div class="brand-sub">写真 → AI認識 / 色抽出 / 手動補正 → 配色比較 → 提案書PDF　v2.1</div>
   </div>
   <div class="top-actions">
     <label class="btn primary" for="photoInput">カメラで撮影</label>
