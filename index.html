@@ -11,8 +11,8 @@
   <title>住宅塗り替えカラー提案 Pro</title>
   <style>
 :root{--bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:#0f172a;--blue:#2563eb;--red:#b91c1c;--r:16px}
-*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}button,input,select,textarea{font:inherit}.topbar{position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 18px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}.top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.brand{font-weight:900;font-size:18px}.brand-sub{font-size:11px;color:var(--muted);margin-top:2px}.layout{max-width:1440px;margin:0 auto;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 24px rgba(15,23,42,.04)}.work-card{padding:12px;height:max-content;position:sticky;top:78px}.canvas-shell{position:relative;min-height:62vh;background:#e5e7eb;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none}.empty{text-align:center;padding:40px 22px;color:var(--muted);max-width:520px;display:flex;gap:8px;flex-direction:column}.empty strong{font-size:19px;color:var(--text)}canvas{display:block;max-width:100%;max-height:72vh}.canvas-tip{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(255,255,255,.93);padding:9px 12px;border-radius:10px;text-align:center;font-size:12px;box-shadow:0 3px 16px rgba(0,0,0,.08)}.canvas-badge{position:absolute;left:12px;top:12px;background:rgba(15,23,42,.87);color:#fff;border-radius:8px;padding:6px 9px;font-size:12px}.ai-overlay{position:absolute;inset:0;background:rgba(15,23,42,.68);color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px}.ai-overlay small{opacity:.8}.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.25);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.toolbar,.button-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.btn,button{border:0;border-radius:11px;background:#eef0f3;color:#111827;padding:10px 12px;font-size:13px;font-weight:750;cursor:pointer;text-decoration:none;text-align:center}button.primary,.btn.primary{background:var(--accent);color:#fff}button.danger{color:var(--red);background:#fff1f2}button:disabled{opacity:.38;cursor:not-allowed}.full{width:100%}.mini{padding:6px 8px;font-size:11px;border-radius:8px}.scheme-bar{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px;background:#f8fafc;border-radius:11px}.scheme-title{font-size:12px;font-weight:800}.scheme-group{display:flex;gap:5px;align-items:center;padding:5px 7px;background:white;border:1px solid var(--line);border-radius:9px;font-size:12px}.scheme-group.saved{border-color:#94a3b8}.scheme-notice{font-size:11px;color:var(--muted);margin-left:auto}.sidebar{display:flex;flex-direction:column;gap:12px}.panel{padding:14px}.panel h2{font-size:14px;margin:0 0 10px}.part-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.part-chip{border:1px solid var(--line);background:white;padding:9px 6px;border-radius:10px;font-size:12px;text-align:center;cursor:pointer}.part-chip.active{border-color:#111827;background:#111827;color:#fff}.field{margin-top:10px}.field.compact{margin-top:10px}.field label{display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;color:#4b5563;margin-bottom:5px}.field input,.field select,.field textarea,.field-row input,.field-row select{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:#111}.field input[type=color]{padding:3px;height:41px}.field input[type=range]{padding:0;border:none}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.notice{font-size:10px;line-height:1.55;color:var(--muted);background:#f8fafc;padding:8px;border-radius:8px;margin-top:10px}.tabs{display:flex;gap:5px;overflow:auto;padding-bottom:6px}.tab{white-space:nowrap;padding:7px 9px;font-size:11px;border-radius:8px}.tab.active{background:#111827;color:white}.palette{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-height:255px;overflow:auto;padding:2px}.swatch{aspect-ratio:1;border-radius:10px;background:var(--c);border:2px solid transparent;cursor:pointer;position:relative;overflow:hidden;min-height:54px}.swatch.active{border-color:#111827;box-shadow:0 0 0 2px white inset}.swatch .label{position:absolute;left:3px;right:3px;bottom:3px;background:rgba(255,255,255,.83);border-radius:6px;padding:3px;font-size:8px;text-align:center;color:#111;line-height:1.15}.layers{display:flex;flex-direction:column;gap:7px}.layer{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px}.layer.selected{border-color:#111827;background:#f8fafc}.layer-dot{width:20px;height:20px;border-radius:50%;background:var(--c);border:1px solid rgba(0,0,0,.15)}.layer-main{min-width:0}.layer-title{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.layer-sub{font-size:9px;color:var(--muted);margin-top:2px}.layer-actions{display:flex;gap:3px}.layer-actions button{padding:5px 7px;font-size:10px}.muted{color:var(--muted);font-size:12px}.small{font-size:10px;margin-top:7px}footer{max-width:1440px;margin:0 auto;padding:6px 16px 22px;color:#6b7280;font-size:10px;line-height:1.5}
-@media(max-width:900px){.topbar{padding:10px 12px;align-items:flex-start}.top-actions{gap:6px}.top-actions .btn{padding:9px 10px;font-size:12px}.brand{font-size:15px}.brand-sub{display:none}.layout{grid-template-columns:1fr;padding:9px}.work-card{position:static}.canvas-shell{min-height:43vh}.canvas-shell canvas{max-height:56vh}.sidebar{gap:9px}.palette{grid-template-columns:repeat(5,1fr)}.swatch .label{display:none}.scheme-notice{width:100%;margin-left:0}.part-grid{grid-template-columns:repeat(5,1fr)}.part-chip{font-size:10px;padding:8px 4px}}
+*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}button,input,select,textarea{font:inherit}.topbar{position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 18px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}.top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.brand{font-weight:900;font-size:18px}.brand-sub{font-size:11px;color:var(--muted);margin-top:2px}.layout{max-width:1440px;margin:0 auto;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 24px rgba(15,23,42,.04)}.work-card{padding:12px;height:max-content;position:sticky;top:78px}.tool-dock{margin:0 0 10px;padding:9px 10px;background:#f8fafc;border:1px solid var(--line);border-radius:12px;display:flex;flex-wrap:wrap;gap:7px;align-items:center}.tool-dock .dock-title{font-size:11px;font-weight:850;color:#475569}.tool-dock .dock-spacer{flex:1}.tool-dock button.active{background:#111827;color:#fff}.tool-dock button.danger-active{background:#b91c1c;color:#fff}.zoom-value{min-width:52px;text-align:center;font-size:12px;font-weight:850}.sample-dock{margin:0 0 10px;padding:10px 12px;background:#f8fafc;border:1px solid var(--line);border-radius:12px;display:flex;flex-wrap:wrap;gap:9px;align-items:end}.sample-dock .field{margin-top:0;flex:1 1 180px}.sample-dock .status-box{flex:1.2 1 220px}.sample-dock select{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff}.sample-dock[hidden],.edit-dock[hidden]{display:none!important}.brush-field{display:flex;gap:7px;align-items:center;min-width:180px;flex:1 1 220px}.brush-field input{min-width:90px;flex:1}.mode-help{font-size:10px;color:#64748b;line-height:1.45;width:100%}.cleanup-note{font-size:10px;color:#7c2d12;background:#fff7ed;border-radius:8px;padding:6px 8px}.canvas-shell.interacting{cursor:crosshair}.canvas-shell.panning{cursor:grab}.canvas-shell.panning:active{cursor:grabbing}.canvas-shell{position:relative;min-height:62vh;background:#e5e7eb;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.empty{text-align:center;padding:40px 22px;color:var(--muted);max-width:520px;display:flex;gap:8px;flex-direction:column}.empty strong{font-size:19px;color:var(--text)}canvas{display:block;max-width:100%;max-height:72vh;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transform-origin:center center;will-change:transform}.canvas-tip{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(255,255,255,.93);padding:9px 12px;border-radius:10px;text-align:center;font-size:12px;box-shadow:0 3px 16px rgba(0,0,0,.08)}.canvas-badge{position:absolute;left:12px;top:12px;background:rgba(15,23,42,.87);color:#fff;border-radius:8px;padding:6px 9px;font-size:12px}.ai-overlay{position:absolute;inset:0;background:rgba(15,23,42,.68);color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px}.ai-overlay small{opacity:.8}.spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.25);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.toolbar,.button-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.btn,button{border:0;border-radius:11px;background:#eef0f3;color:#111827;padding:10px 12px;font-size:13px;font-weight:750;cursor:pointer;text-decoration:none;text-align:center}button.primary,.btn.primary{background:var(--accent);color:#fff}button.danger{color:var(--red);background:#fff1f2}button:disabled{opacity:.38;cursor:not-allowed}.full{width:100%}.mini{padding:6px 8px;font-size:11px;border-radius:8px}.scheme-bar{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px;background:#f8fafc;border-radius:11px}.scheme-title{font-size:12px;font-weight:800}.scheme-group{display:flex;gap:5px;align-items:center;padding:5px 7px;background:white;border:1px solid var(--line);border-radius:9px;font-size:12px}.scheme-group.saved{border-color:#94a3b8}.scheme-notice{font-size:11px;color:var(--muted);margin-left:auto}.sidebar{display:flex;flex-direction:column;gap:12px}.panel{padding:14px}.panel h2{font-size:14px;margin:0 0 10px}.part-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.part-chip{border:1px solid var(--line);background:white;padding:9px 6px;border-radius:10px;font-size:12px;text-align:center;cursor:pointer}.part-chip.active{border-color:#111827;background:#111827;color:#fff}.field{margin-top:10px}.field.compact{margin-top:10px}.field label{display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;color:#4b5563;margin-bottom:5px}.field input,.field select,.field textarea,.field-row input,.field-row select{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:#111}.field input[type=color]{padding:3px;height:41px}.field input[type=range]{padding:0;border:none}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.notice{font-size:10px;line-height:1.55;color:var(--muted);background:#f8fafc;padding:8px;border-radius:8px;margin-top:10px}.tabs{display:flex;gap:5px;overflow:auto;padding-bottom:6px}.tab{white-space:nowrap;padding:7px 9px;font-size:11px;border-radius:8px}.tab.active{background:#111827;color:white}.palette{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-height:255px;overflow:auto;padding:2px}.swatch{aspect-ratio:1;border-radius:10px;background:var(--c);border:2px solid transparent;cursor:pointer;position:relative;overflow:hidden;min-height:54px}.swatch.active{border-color:#111827;box-shadow:0 0 0 2px white inset}.swatch .label{position:absolute;left:3px;right:3px;bottom:3px;background:rgba(255,255,255,.83);border-radius:6px;padding:3px;font-size:8px;text-align:center;color:#111;line-height:1.15}.layers{display:flex;flex-direction:column;gap:7px}.layer{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px}.layer.selected{border-color:#111827;background:#f8fafc}.layer-dot{width:20px;height:20px;border-radius:50%;background:var(--c);border:1px solid rgba(0,0,0,.15)}.layer-main{min-width:0}.layer-title{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.layer-sub{font-size:9px;color:var(--muted);margin-top:2px}.layer-actions{display:flex;gap:3px}.layer-actions button{padding:5px 7px;font-size:10px}.muted{color:var(--muted);font-size:12px}.small{font-size:10px;margin-top:7px}footer{max-width:1440px;margin:0 auto;padding:6px 16px 22px;color:#6b7280;font-size:10px;line-height:1.5}
+@media(max-width:900px){.view-dock{position:sticky;top:62px;z-index:24;background:rgba(248,250,252,.97);backdrop-filter:blur(10px)}.sample-dock{position:sticky;top:111px;z-index:23;background:rgba(248,250,252,.98);backdrop-filter:blur(10px)}.topbar{padding:10px 12px;align-items:flex-start}.top-actions{gap:6px}.top-actions .btn{padding:9px 10px;font-size:12px}.brand{font-size:15px}.brand-sub{display:none}.layout{grid-template-columns:1fr;padding:9px}.work-card{position:static}.canvas-shell{min-height:43vh}.canvas-shell canvas{max-height:56vh}.sidebar{gap:9px}.palette{grid-template-columns:repeat(5,1fr)}.swatch .label{display:none}.scheme-notice{width:100%;margin-left:0}.part-grid{grid-template-columns:repeat(5,1fr)}.part-chip{font-size:10px;padding:8px 4px}}
 
 </style>
   <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
@@ -57,10 +57,12 @@ const PALETTES = {
 const $ = id => document.getElementById(id);
 const photoInput=$('photoInput'), libraryInput=$('libraryInput'), projectInput=$('projectInput'), canvas=$('mainCanvas'), ctx=canvas.getContext('2d',{willReadFrequently:true});
 const canvasShell=$('canvasShell'), emptyState=$('emptyState'), canvasTip=$('canvasTip'), canvasBadge=$('canvasBadge'), aiOverlay=$('aiOverlay'), aiStatus=$('aiStatus'), aiSubstatus=$('aiSubstatus');
-const aiBtn=$('aiBtn'), polygonBtn=$('polygonBtn'), sampleBtn=$('sampleBtn'), applySampleBtn=$('applySampleBtn'), finishPolygonBtn=$('finishPolygonBtn'), undoPointBtn=$('undoPointBtn'), beforeBtn=$('beforeBtn'), clearLayersBtn=$('clearLayersBtn');
+const viewDock=$('viewDock'),zoomOutBtn=$('zoomOutBtn'),zoomInBtn=$('zoomInBtn'),fitViewBtn=$('fitViewBtn'),panBtn=$('panBtn'),zoomLabel=$('zoomLabel');
+const sampleDock=$('sampleDock'),sampleScope=$('sampleScope'),sampleTolerance=$('sampleTolerance'),sampleToleranceLabel=$('sampleToleranceLabel'),sampleColorPreview=$('sampleColorPreview'),sampleStatus=$('sampleStatus'),applySampleBtn=$('applySampleBtn');
+const editDock=$('editDock'),maskAddBtn=$('maskAddBtn'),maskSubtractBtn=$('maskSubtractBtn'),maskUndoBtn=$('maskUndoBtn'),brushSize=$('brushSize'),brushSizeLabel=$('brushSizeLabel'),cleanupBtn=$('cleanupBtn'),applyCleanupBtn=$('applyCleanupBtn'),clearCleanupBtn=$('clearCleanupBtn'),undoImageBtn=$('undoImageBtn');
+const aiBtn=$('aiBtn'), polygonBtn=$('polygonBtn'), sampleBtn=$('sampleBtn'), finishPolygonBtn=$('finishPolygonBtn'), undoPointBtn=$('undoPointBtn'), beforeBtn=$('beforeBtn'), clearLayersBtn=$('clearLayersBtn');
 const partGrid=$('partGrid'), partSelect=$('partSelect'), paletteTabs=$('paletteTabs'), paletteEl=$('palette'), layersEl=$('layers');
 const brandInput=$('brandInput'), codeInput=$('codeInput'), customColor=$('customColor'), strength=$('strength'), strengthLabel=$('strengthLabel'), applyColorBtn=$('applyColorBtn');
-const sampleTolerance=$('sampleTolerance'), sampleToleranceLabel=$('sampleToleranceLabel'), sampleColorPreview=$('sampleColorPreview'), sampleStatus=$('sampleStatus');
 const customerName=$('customerName'), siteAddress=$('siteAddress'), companyName=$('companyName'), staffName=$('staffName'), proposalMemo=$('proposalMemo'), pdfBtn=$('pdfBtn');
 const saveProjectBtn=$('saveProjectBtn'), schemeNotice=$('schemeNotice');
 
@@ -69,7 +71,9 @@ let octx = original.getContext('2d',{willReadFrequently:true});
 let imageLoaded=false, showingBefore=false, polygonMode=false, sampleMode=false, currentPoints=[];
 let activePart='wall', selectedLayerId=null, currentPalette='日本ペイント ND';
 let layers=[], schemes={A:null,B:null,C:null};
-let aiRunning=false, draggingPointIndex=-1, editingLayerId=null, loupe=null, sourcePixels=null, samplePreviewMask=null, sampleSeed=null, sampleRecalcTimer=0;
+let aiRunning=false,draggingPointIndex=-1,editingLayerId=null,loupe=null,sourcePixels=null,samplePreviewMask=null,sampleSeed=null,sampleRecalcTimer=0;
+let brushMode=null,isBrushing=false,lastBrushPoint=null,maskHistory=[],cleanupMask=null,imageHistory=[];
+let viewScale=1,panX=0,panY=0,panMode=false,panStart=null,activeTouchPoints=new Map(),pinchStart=null;
 let segmenter=null;
 let segmenterPromise=null;
 let transformersPromise=null;
@@ -81,32 +85,28 @@ function init(){
 }
 
 function wire(){
-  photoInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadPhotoFile(f);});
-  libraryInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadPhotoFile(f);});
-  projectInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadProjectFile(f);});
-  aiBtn.addEventListener('click', ()=>runSegmentationAI(photoGeneration,true));
-  polygonBtn.addEventListener('click', startPolygon);
-  sampleBtn.addEventListener('click', startSampleMode);
-  applySampleBtn.addEventListener('click', applySampleMask);
-  finishPolygonBtn.addEventListener('click', finishPolygon);
-  undoPointBtn.addEventListener('click', ()=>{currentPoints.pop(); updatePolygonButtons(); render();});
+  photoInput.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)loadPhotoFile(f);});
+  libraryInput.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)loadPhotoFile(f);});
+  projectInput.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)loadProjectFile(f);});
+  aiBtn.addEventListener('click',()=>runSegmentationAI(photoGeneration,true));
+  polygonBtn.addEventListener('click',startPolygon);
+  sampleBtn.addEventListener('click',startSampleMode);
+  finishPolygonBtn.addEventListener('click',finishPolygon);
+  undoPointBtn.addEventListener('click',()=>{currentPoints.pop();updateReady();render();});
   beforeBtn.addEventListener('pointerdown',()=>setBefore(true));
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>beforeBtn.addEventListener(ev,()=>setBefore(false)));
-  clearLayersBtn.addEventListener('click',()=>{if(confirm('作成した部位範囲をすべて削除しますか？')){layers=[];selectedLayerId=null;samplePreviewMask=null;sampleSeed=null;renderLayers();render();updateReady();}});
-  canvas.addEventListener('pointerdown', canvasPointerDown);
-  canvas.addEventListener('pointermove', canvasPointerMove);
-  ['pointerup','pointercancel','pointerleave'].forEach(ev=>canvas.addEventListener(ev, canvasPointerUp));
-  strength.addEventListener('input',()=>strengthLabel.textContent=strength.value+'%');
-  sampleTolerance.addEventListener('input',()=>{sampleToleranceLabel.textContent=sampleTolerance.value; scheduleSamplePreview();});
-  customColor.addEventListener('input',()=>document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active')));
-  applyColorBtn.addEventListener('click', applyCurrentPaint);
-  pdfBtn.addEventListener('click', createProposalPDF);
-  saveProjectBtn.addEventListener('click', saveProject);
-  document.querySelectorAll('.scheme-group').forEach(g=>{
-    g.querySelector('.save-scheme').addEventListener('click',()=>saveScheme(g.dataset.scheme));
-    g.querySelector('.load-scheme').addEventListener('click',()=>loadScheme(g.dataset.scheme));
-  });
-  [customerName,siteAddress,companyName,staffName,proposalMemo].forEach(el=>el.addEventListener('change',()=>{}));
+  clearLayersBtn.addEventListener('click',()=>{if(confirm('作成した部位範囲をすべて削除しますか？')){layers=[];selectedLayerId=null;maskHistory=[];renderLayers();render();updateReady();}});
+  zoomOutBtn.addEventListener('click',()=>setViewScale(viewScale/1.25));zoomInBtn.addEventListener('click',()=>setViewScale(viewScale*1.25));fitViewBtn.addEventListener('click',resetView);panBtn.addEventListener('click',togglePanMode);
+  sampleScope.addEventListener('change',()=>{if(sampleSeed)updateSamplePreview();});applySampleBtn.addEventListener('click',applySampleMask);
+  sampleTolerance.addEventListener('input',()=>{sampleToleranceLabel.textContent=sampleTolerance.value;scheduleSamplePreview();});
+  maskAddBtn.addEventListener('click',()=>setBrushMode('add'));maskSubtractBtn.addEventListener('click',()=>setBrushMode('subtract'));maskUndoBtn.addEventListener('click',undoMaskEdit);
+  brushSize.addEventListener('input',()=>brushSizeLabel.textContent=brushSize.value);cleanupBtn.addEventListener('click',()=>setBrushMode('cleanup'));applyCleanupBtn.addEventListener('click',applyCleanup);clearCleanupBtn.addEventListener('click',clearCleanupMask);undoImageBtn.addEventListener('click',undoImageEdit);
+  canvas.addEventListener('pointerdown',canvasPointerDown);canvas.addEventListener('pointermove',canvasPointerMove);['pointerup','pointercancel','pointerleave'].forEach(ev=>canvas.addEventListener(ev,canvasPointerUp));
+  ['touchstart','touchmove'].forEach(ev=>canvas.addEventListener(ev,e=>{if(polygonMode||sampleMode||brushMode||panMode)e.preventDefault();},{passive:false}));
+  ['contextmenu','dragstart','selectstart'].forEach(ev=>{canvas.addEventListener(ev,e=>e.preventDefault());canvasShell.addEventListener(ev,e=>e.preventDefault());});
+  strength.addEventListener('input',()=>strengthLabel.textContent=strength.value+'%');customColor.addEventListener('input',()=>document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active')));applyColorBtn.addEventListener('click',applyCurrentPaint);
+  pdfBtn.addEventListener('click',createProposalPDF);saveProjectBtn.addEventListener('click',saveProject);
+  document.querySelectorAll('.scheme-group').forEach(g=>{g.querySelector('.save-scheme').addEventListener('click',()=>saveScheme(g.dataset.scheme));g.querySelector('.load-scheme').addEventListener('click',()=>loadScheme(g.dataset.scheme));});
 }
 
 function renderPartControls(){
@@ -163,6 +163,7 @@ async function loadPhotoFile(file){
       setupImageCanvas(w,h);
       octx.clearRect(0,0,w,h);
       octx.drawImage(img,0,0,w,h);
+      sourcePixels=octx.getImageData(0,0,w,h).data;
       resetProjectVisuals();
       render();
       const generation=photoGeneration;
@@ -182,91 +183,65 @@ async function loadPhotoFile(file){
   img.src=url;
 }
 function setupImageCanvas(w,h){
-  canvas.width=original.width=w; canvas.height=original.height=h; canvas.hidden=false; emptyState.hidden=true; imageLoaded=true; sourcePixels=octx.getImageData(0,0,w,h).data;
+  canvas.width=original.width=w;canvas.height=original.height=h;canvas.hidden=false;emptyState.hidden=true;imageLoaded=true;sourcePixels=null;cleanupMask=new Uint8Array(w*h);resetView();
 }
 function resetProjectVisuals(){
-  layers=[];schemes={A:null,B:null,C:null};selectedLayerId=null;currentPoints=[];polygonMode=false;sampleMode=false;draggingPointIndex=-1;editingLayerId=null;samplePreviewMask=null;sampleSeed=null;loupe=null;
-  document.querySelectorAll('.scheme-group').forEach(g=>g.classList.remove('saved'));
-  schemeNotice.textContent='未保存'; renderLayers(); updateReady();
+  layers=[];schemes={A:null,B:null,C:null};selectedLayerId=null;currentPoints=[];polygonMode=false;sampleMode=false;draggingPointIndex=-1;editingLayerId=null;loupe=null;samplePreviewMask=null;sampleSeed=null;brushMode=null;isBrushing=false;lastBrushPoint=null;maskHistory=[];cleanupMask=new Uint8Array(canvas.width*canvas.height);imageHistory=[];sampleDock.hidden=true;
+  document.querySelectorAll('.scheme-group').forEach(g=>g.classList.remove('saved'));schemeNotice.textContent='未保存';renderLayers();updateReady();
 }
-
 function updateReady(){
-  [aiBtn,polygonBtn,sampleBtn,beforeBtn,clearLayersBtn,pdfBtn,saveProjectBtn].forEach(b=>b.disabled=!imageLoaded);
-  if(aiRunning)aiBtn.disabled=true;
-  finishPolygonBtn.disabled=currentPoints.length<3;
-  undoPointBtn.disabled=currentPoints.length===0;
-  applySampleBtn.disabled=!samplePreviewMask;
-  applyColorBtn.disabled=!imageLoaded || (!selectedLayerId && !layers.some(l=>l.part===activePart));
-  clearLayersBtn.disabled=!imageLoaded || layers.length===0; pdfBtn.disabled=!imageLoaded || layers.length===0;
+  [aiBtn,polygonBtn,sampleBtn,beforeBtn,clearLayersBtn,pdfBtn,saveProjectBtn,zoomOutBtn,zoomInBtn,fitViewBtn,panBtn].forEach(b=>b.disabled=!imageLoaded);if(aiRunning)aiBtn.disabled=true;
+  finishPolygonBtn.disabled=currentPoints.length<3;undoPointBtn.disabled=currentPoints.length===0;applySampleBtn.disabled=!samplePreviewMask;applyColorBtn.disabled=!imageLoaded||(!selectedLayerId&&!layers.some(l=>l.part===activePart));clearLayersBtn.disabled=!imageLoaded||layers.length===0;pdfBtn.disabled=!imageLoaded||layers.length===0;
+  const selected=layers.find(l=>l.id===selectedLayerId);maskAddBtn.disabled=!selected;maskSubtractBtn.disabled=!selected;maskUndoBtn.disabled=maskHistory.length===0;applyCleanupBtn.disabled=!cleanupMask||!cleanupMask.some(v=>v);clearCleanupBtn.disabled=applyCleanupBtn.disabled;undoImageBtn.disabled=imageHistory.length===0;editDock.hidden=!imageLoaded;
+  canvasShell.classList.toggle('interacting',!!(polygonMode||sampleMode||brushMode));canvasShell.classList.toggle('panning',panMode);sampleBtn.classList.toggle('active',sampleMode);panBtn.classList.toggle('active',panMode);
 }
 function setBefore(v){showingBefore=v;canvasBadge.hidden=!v;canvasBadge.textContent='施工前';render();}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function updateViewTransform(){canvas.style.transform=`translate(${panX}px,${panY}px) scale(${viewScale})`;zoomLabel.textContent=Math.round(viewScale*100)+'%';}
+function setViewScale(next){if(!imageLoaded)return;viewScale=clamp(next,1,5);if(viewScale===1){panX=0;panY=0;}updateViewTransform();}
+function resetView(){viewScale=1;panX=0;panY=0;panMode=false;if(canvas)updateViewTransform();}
+function togglePanMode(){if(!imageLoaded)return;panMode=!panMode;if(panMode){polygonMode=false;sampleMode=false;brushMode=null;sampleDock.hidden=true;canvasTip.hidden=true;}updateReady();}
 function pointFromEvent(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};}
-function findNearbyPointIndex(p){
-  const r=canvas.getBoundingClientRect();
-  const threshold=28*canvas.width/r.width;
-  for(let i=currentPoints.length-1;i>=0;i--){
-    const q=currentPoints[i],dx=p.x-q.x,dy=p.y-q.y;
-    if(dx*dx+dy*dy<=threshold*threshold)return i;
-  }
-  return -1;
-}
-function clearInteractionPreview(){sampleMode=false;samplePreviewMask=null;sampleSeed=null;clearTimeout(sampleRecalcTimer);}
-function startPolygon(){
-  if(!imageLoaded)return; clearInteractionPreview(); polygonMode=true; currentPoints=[]; draggingPointIndex=-1; editingLayerId=null; loupe=null; canvasTip.hidden=false; canvasTip.textContent=`${partName(activePart)}の角をタップ。既存の点はドラッグで移動できます。`;
-  updateReady(); render();
-}
-function startEditLayer(id){
-  const l=layers.find(x=>x.id===id); if(!l||!l.points?.length)return;
-  clearInteractionPreview(); polygonMode=true; editingLayerId=id; currentPoints=l.points.map(p=>({...p})); draggingPointIndex=-1; loupe=null; activePart=l.part; partSelect.value=l.part; canvasTip.hidden=false; canvasTip.textContent='点をドラッグして調整 → 「範囲を確定」'; updateReady(); render();
-}
-function startSampleMode(){
-  if(!imageLoaded)return; polygonMode=false; currentPoints=[]; draggingPointIndex=-1; editingLayerId=null; sampleMode=true; samplePreviewMask=null; sampleSeed=null; loupe=null; canvasTip.hidden=false; canvasTip.textContent='壁の色を取りたい場所をタップ。類似色スライダーで範囲を調整できます。'; sampleStatus.textContent='まだ抽出していません'; updateReady(); render();
-}
+function findNearbyPointIndex(p){const r=canvas.getBoundingClientRect(),threshold=28*canvas.width/r.width;for(let i=currentPoints.length-1;i>=0;i--){const q=currentPoints[i],dx=p.x-q.x,dy=p.y-q.y;if(dx*dx+dy*dy<=threshold*threshold)return i;}return-1;}
+function screenBrushRadius(){const r=canvas.getBoundingClientRect();return Math.max(2,Number(brushSize.value)*canvas.width/Math.max(1,r.width));}
+function clearInteraction(){polygonMode=false;sampleMode=false;brushMode=null;panMode=false;samplePreviewMask=null;sampleSeed=null;sampleDock.hidden=true;draggingPointIndex=-1;isBrushing=false;lastBrushPoint=null;loupe=null;maskAddBtn.classList.remove('active');maskSubtractBtn.classList.remove('active');cleanupBtn.classList.remove('danger-active');sampleBtn.classList.remove('active');}
+function startPolygon(){if(!imageLoaded)return;clearInteraction();polygonMode=true;currentPoints=[];editingLayerId=null;canvasTip.hidden=false;canvasTip.textContent=`${partName(activePart)}の角をタップ。点はドラッグで移動できます。`;updateReady();render();}
+function startEditLayer(id){const l=layers.find(x=>x.id===id);if(!l||!l.points?.length)return;clearInteraction();polygonMode=true;editingLayerId=id;currentPoints=l.points.map(p=>({...p}));activePart=l.part;partSelect.value=l.part;canvasTip.hidden=false;canvasTip.textContent='点をドラッグして微調整 → 「範囲を確定」';updateReady();render();}
+function startSampleMode(){if(!imageLoaded)return;if(sampleMode){sampleMode=false;sampleDock.hidden=true;samplePreviewMask=null;sampleSeed=null;canvasTip.hidden=true;render();updateReady();return;}clearInteraction();sampleMode=true;sampleDock.hidden=false;canvasTip.hidden=false;canvasTip.textContent='壁の色を取りたい場所をタップ → 上のスライダーで青マスクを調整';sampleStatus.textContent='画像をタップして抽出を開始';updateReady();render();}
 function canvasPointerDown(e){
-  if(showingBefore)return; const p=pointFromEvent(e);
-  if(sampleMode){e.preventDefault(); handleSampleTap(p); return;}
-  if(!polygonMode)return; e.preventDefault();
-  const found=findNearbyPointIndex(p);
-  if(found>=0){draggingPointIndex=found; currentPoints[found]=p;} else {currentPoints.push(p); draggingPointIndex=currentPoints.length-1;}
-  loupe={x:p.x,y:p.y}; updateReady(); render();
+  if(showingBefore)return;if(e.pointerType==='touch')activeTouchPoints.set(e.pointerId,{x:e.clientX,y:e.clientY});if(activeTouchPoints.size===2&&!polygonMode&&!sampleMode&&!brushMode){const pts=[...activeTouchPoints.values()];pinchStart={dist:Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y),scale:viewScale};e.preventDefault();return;}
+  if(panMode){e.preventDefault();panStart={x:e.clientX,y:e.clientY,panX,panY};if(canvas.setPointerCapture&&e.pointerId!=null)canvas.setPointerCapture(e.pointerId);return;}
+  const p=pointFromEvent(e);if(brushMode){e.preventDefault();if(canvas.setPointerCapture&&e.pointerId!=null)canvas.setPointerCapture(e.pointerId);beginBrushStroke(p);return;}if(sampleMode){e.preventDefault();handleSampleTap(p);return;}if(!polygonMode)return;e.preventDefault();if(canvas.setPointerCapture&&e.pointerId!=null)canvas.setPointerCapture(e.pointerId);const found=findNearbyPointIndex(p);if(found>=0){draggingPointIndex=found;currentPoints[found]=p;}else{currentPoints.push(p);draggingPointIndex=currentPoints.length-1;}loupe={x:p.x,y:p.y};updateReady();render();
 }
 function canvasPointerMove(e){
-  if(!polygonMode||draggingPointIndex<0||showingBefore)return;
-  e.preventDefault(); const p=pointFromEvent(e); currentPoints[draggingPointIndex]=p; loupe={x:p.x,y:p.y}; render();
+  if(e.pointerType==='touch'&&activeTouchPoints.has(e.pointerId))activeTouchPoints.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pinchStart&&activeTouchPoints.size>=2&&!polygonMode&&!sampleMode&&!brushMode){const pts=[...activeTouchPoints.values()],d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);setViewScale(pinchStart.scale*d/Math.max(1,pinchStart.dist));e.preventDefault();return;}
+  if(panMode&&panStart){e.preventDefault();panX=panStart.panX+(e.clientX-panStart.x);panY=panStart.panY+(e.clientY-panStart.y);updateViewTransform();return;}if(brushMode&&isBrushing){e.preventDefault();continueBrushStroke(pointFromEvent(e));return;}if(!polygonMode||draggingPointIndex<0)return;e.preventDefault();const p=pointFromEvent(e);currentPoints[draggingPointIndex]=p;loupe={x:p.x,y:p.y};render();
 }
-function canvasPointerUp(){ if(draggingPointIndex>=0){draggingPointIndex=-1; loupe=null; render();} }
-function updatePolygonButtons(){updateReady();}
-function finishPolygon(){
-  if(currentPoints.length<3)return; const mask=polygonToMask(currentPoints,canvas.width,canvas.height);
-  if(editingLayerId){
-    const layer=layers.find(l=>l.id===editingLayerId); if(layer){layer.mask=mask;layer.points=currentPoints.map(p=>({...p})); selectLayer(layer.id);} 
-  }else{
-    addLayer({part:activePart,source:'手動',mask,points:currentPoints.map(p=>({...p})),color:customColor.value,brand:brandInput.value.trim()||'カスタム',code:codeInput.value.trim()||'任意色',strength:Number(strength.value)/100,visible:false});
-  }
-  polygonMode=false;currentPoints=[];editingLayerId=null;canvasTip.hidden=true;loupe=null;updateReady();render();
-}
-function handleSampleTap(p){
-  sampleSeed={x:Math.max(0,Math.min(canvas.width-1,Math.round(p.x))),y:Math.max(0,Math.min(canvas.height-1,Math.round(p.y)))};
-  const [r,g,b]=getPixel(sourcePixels,sampleSeed.x,sampleSeed.y,canvas.width); sampleColorPreview.value=rgbToHex(r,g,b); updateSamplePreview();
-}
-function scheduleSamplePreview(){ sampleToleranceLabel.textContent=sampleTolerance.value; clearTimeout(sampleRecalcTimer); if(!sampleSeed)return; sampleRecalcTimer=setTimeout(updateSamplePreview,40); }
-function applySampleMask(){
-  if(!samplePreviewMask)return;
-  addLayer({part:activePart,source:'色抽出',mask:samplePreviewMask.slice(),color:customColor.value,brand:brandInput.value.trim()||'カスタム',code:codeInput.value.trim()||'任意色',strength:Number(strength.value)/100,visible:false});
-  sampleMode=false; samplePreviewMask=null; sampleSeed=null; canvasTip.hidden=true; sampleStatus.textContent='抽出範囲を追加しました'; updateReady(); render();
-}
-function updateSamplePreview(){
-  if(!sampleSeed||!sourcePixels)return;
-  const tol=Number(sampleTolerance.value); sampleToleranceLabel.textContent=String(tol);
-  samplePreviewMask=floodFillByColor(sampleSeed.x,sampleSeed.y,tol);
-  const count=samplePreviewMask.reduce((a,b)=>a+b,0); sampleStatus.textContent=count?`選択中: ${count.toLocaleString()} px`:'選択できる範囲がありません';
-  render(); updateReady();
-}
-function polygonToMask(points,w,h){
-  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.beginPath();points.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.closePath();x.fill();
-  const d=x.getImageData(0,0,w,h).data,m=new Uint8Array(w*h);for(let i=0,j=0;i<d.length;i+=4,j++)m[j]=d[i+3]>0?1:0;return m;
-}
+function canvasPointerUp(e){if(e?.pointerType==='touch')activeTouchPoints.delete(e.pointerId);if(activeTouchPoints.size<2)pinchStart=null;try{if(canvas.releasePointerCapture&&e?.pointerId!=null)canvas.releasePointerCapture(e.pointerId);}catch(_){}panStart=null;if(isBrushing){isBrushing=false;lastBrushPoint=null;loupe=null;}if(draggingPointIndex>=0){draggingPointIndex=-1;loupe=null;}updateReady();render();}
+function finishPolygon(){if(currentPoints.length<3)return;const mask=polygonToMask(currentPoints,canvas.width,canvas.height);if(editingLayerId){const l=layers.find(x=>x.id===editingLayerId);if(l){l.mask=mask;l.points=currentPoints.map(p=>({...p}));selectLayer(l.id);}}else addLayer({part:activePart,source:'手動',mask,points:currentPoints.map(p=>({...p})),color:customColor.value,brand:brandInput.value.trim()||'カスタム',code:codeInput.value.trim()||'任意色',strength:Number(strength.value)/100,visible:false});polygonMode=false;editingLayerId=null;currentPoints=[];canvasTip.hidden=true;updateReady();render();}
+function polygonToMask(points,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.beginPath();points.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.closePath();x.fill();const d=x.getImageData(0,0,w,h).data,m=new Uint8Array(w*h);for(let i=0,j=0;i<d.length;i+=4,j++)m[j]=d[i+3]>0?1:0;return m;}
 
+function handleSampleTap(p){if(!sourcePixels)return;sampleSeed={x:clamp(Math.round(p.x),0,canvas.width-1),y:clamp(Math.round(p.y),0,canvas.height-1)};const [r,g,b]=getPixel(sourcePixels,sampleSeed.x,sampleSeed.y,canvas.width);sampleColorPreview.value=rgbToHex(r,g,b);updateSamplePreview();}
+function scheduleSamplePreview(){sampleToleranceLabel.textContent=sampleTolerance.value;clearTimeout(sampleRecalcTimer);if(sampleSeed)sampleRecalcTimer=setTimeout(updateSamplePreview,70);}
+function updateSamplePreview(){if(!sampleSeed||!sourcePixels)return;const tol=Number(sampleTolerance.value);samplePreviewMask=sampleScope.value==='all'?globalColorMask(sampleSeed.x,sampleSeed.y,tol):floodFillByColor(sampleSeed.x,sampleSeed.y,tol);let count=0;for(const v of samplePreviewMask)count+=v;const pct=count/samplePreviewMask.length*100;let warn='';if(pct>55)warn=' ⚠ 広すぎ';else if(pct<.08)warn=' ⚠ 狭すぎ';sampleStatus.textContent=count?`選択 ${pct.toFixed(1)}% (${count.toLocaleString()}px)${warn}`:'選択できません';render();updateReady();}
+function globalColorMask(seedX,seedY,tol){const w=canvas.width,h=canvas.height,size=w*h,out=new Uint8Array(size),[sr,sg,sb]=getPixel(sourcePixels,seedX,seedY,w);for(let p=0,i=0;p<size;p++,i+=4)if(colorDistanceWeighted(sourcePixels[i],sourcePixels[i+1],sourcePixels[i+2],sr,sg,sb)<=tol)out[p]=1;return out;}
+function applySampleMask(){if(!samplePreviewMask)return;addLayer({part:activePart,source:'色抽出',mask:samplePreviewMask.slice(),color:customColor.value,brand:brandInput.value.trim()||'カスタム',code:codeInput.value.trim()||'任意色',strength:Number(strength.value)/100,visible:false});sampleMode=false;sampleDock.hidden=true;samplePreviewMask=null;sampleSeed=null;canvasTip.hidden=true;updateReady();render();}
+function getPixel(data,x,y,w){const i=(y*w+x)*4;return[data[i],data[i+1],data[i+2],data[i+3]];}
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+function colorDistanceWeighted(r1,g1,b1,r2,g2,b2){const y1=.299*r1+.587*g1+.114*b1,y2=.299*r2+.587*g2+.114*b2,cb1=b1-y1,cb2=b2-y2,cr1=r1-y1,cr2=r2-y2,dy=y1-y2,dcb=cb1-cb2,dcr=cr1-cr2;return Math.sqrt(dcb*dcb+dcr*dcr+dy*dy*.18);}
+function floodFillByColor(seedX,seedY,tol){const w=canvas.width,h=canvas.height,size=w*h,mask=new Uint8Array(size),seen=new Uint8Array(size),q=new Int32Array(size),[sr,sg,sb,sa]=getPixel(sourcePixels,seedX,seedY,w);if(sa===0)return mask;let head=0,tail=0;const start=seedY*w+seedX;q[tail++]=start;seen[start]=1;while(head<tail){const idx=q[head++],x=idx%w,y=(idx/w)|0,i=idx*4;if(colorDistanceWeighted(sourcePixels[i],sourcePixels[i+1],sourcePixels[i+2],sr,sg,sb)>tol)continue;mask[idx]=1;if(x>0){const n=idx-1;if(!seen[n]){seen[n]=1;q[tail++]=n;}}if(x<w-1){const n=idx+1;if(!seen[n]){seen[n]=1;q[tail++]=n;}}if(y>0){const n=idx-w;if(!seen[n]){seen[n]=1;q[tail++]=n;}}if(y<h-1){const n=idx+w;if(!seen[n]){seen[n]=1;q[tail++]=n;}}}return mask;}
+
+function setBrushMode(mode){if(!imageLoaded)return;if(brushMode===mode){brushMode=null;maskAddBtn.classList.remove('active');maskSubtractBtn.classList.remove('active');cleanupBtn.classList.remove('danger-active');canvasTip.hidden=true;updateReady();render();return;}if((mode==='add'||mode==='subtract')&&!layers.find(l=>l.id===selectedLayerId)){alert('先に補正したい部位レイヤーを選択してください。');return;}polygonMode=false;sampleMode=false;panMode=false;sampleDock.hidden=true;brushMode=mode;maskAddBtn.classList.toggle('active',mode==='add');maskSubtractBtn.classList.toggle('active',mode==='subtract');cleanupBtn.classList.toggle('danger-active',mode==='cleanup');canvasTip.hidden=false;canvasTip.textContent=mode==='add'?'青ブラシで塗装範囲を追加':mode==='subtract'?'窓・玄関・植栽など除外したい部分をなぞる':'消したい電線・小物を赤くなぞる';updateReady();render();}
+function pushMaskHistory(l){maskHistory.push({layerId:l.id,mask:l.mask.slice()});if(maskHistory.length>12)maskHistory.shift();}
+function undoMaskEdit(){const h=maskHistory.pop();if(!h)return;const l=layers.find(x=>x.id===h.layerId);if(l){l.mask=h.mask;selectLayer(l.id);}updateReady();render();}
+function paintCircle(mask,x,y,r,value=1){const w=canvas.width,h=canvas.height,rr=r*r;for(let yy=Math.max(0,Math.floor(y-r));yy<=Math.min(h-1,Math.ceil(y+r));yy++){const dy=yy-y;for(let xx=Math.max(0,Math.floor(x-r));xx<=Math.min(w-1,Math.ceil(x+r));xx++){const dx=xx-x;if(dx*dx+dy*dy<=rr)mask[yy*w+xx]=value;}}}
+function brushSegment(mask,a,b,r,value){const d=Math.hypot(b.x-a.x,b.y-a.y),steps=Math.max(1,Math.ceil(d/Math.max(1,r*.4)));for(let i=0;i<=steps;i++){const t=i/steps;paintCircle(mask,a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t,r,value);}}
+function beginBrushStroke(p){isBrushing=true;lastBrushPoint=p;loupe={x:p.x,y:p.y};const r=screenBrushRadius();if(brushMode==='cleanup'){if(!cleanupMask||cleanupMask.length!==canvas.width*canvas.height)cleanupMask=new Uint8Array(canvas.width*canvas.height);paintCircle(cleanupMask,p.x,p.y,r,1);}else{const l=layers.find(x=>x.id===selectedLayerId);if(!l){isBrushing=false;return;}pushMaskHistory(l);paintCircle(l.mask,p.x,p.y,r,brushMode==='add'?1:0);}render();updateReady();}
+function continueBrushStroke(p){const r=screenBrushRadius();loupe={x:p.x,y:p.y};if(brushMode==='cleanup')brushSegment(cleanupMask,lastBrushPoint,p,r,1);else{const l=layers.find(x=>x.id===selectedLayerId);if(l)brushSegment(l.mask,lastBrushPoint,p,r,brushMode==='add'?1:0);}lastBrushPoint=p;render();}
+function clearCleanupMask(){cleanupMask=new Uint8Array(canvas.width*canvas.height);render();updateReady();}
+function inpaintSmallObjects(src,mask,w,h){const out=new ImageData(new Uint8ClampedArray(src.data),w,h),d=out.data,size=w*h,known=new Uint8Array(size),queued=new Uint8Array(size),q=new Int32Array(size);let head=0,tail=0;for(let i=0;i<size;i++)known[i]=mask[i]?0:1;function visit(i,cb){const x=i%w,y=(i/w)|0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy;if(nx>=0&&nx<w&&ny>=0&&ny<h)cb(ny*w+nx);}}for(let i=0;i<size;i++)if(mask[i])visit(i,n=>{if(known[n]&&!queued[i]){q[tail++]=i;queued[i]=1;}});while(head<tail){const i=q[head++];if(known[i])continue;let r=0,g=0,b=0,c=0;visit(i,n=>{if(known[n]){const j=n*4;r+=d[j];g+=d[j+1];b+=d[j+2];c++;}});if(!c)continue;const j=i*4;d[j]=r/c;d[j+1]=g/c;d[j+2]=b/c;d[j+3]=255;known[i]=1;visit(i,n=>{if(mask[n]&&!known[n]&&!queued[n]){queued[n]=1;q[tail++]=n;}});}for(let pass=0;pass<2;pass++){const copy=new Uint8ClampedArray(d);for(let i=0;i<size;i++)if(mask[i]){const x=i%w,y=(i/w)|0;let r=0,g=0,b=0,c=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const nx=x+dx,ny=y+dy;if(nx<0||nx>=w||ny<0||ny>=h)continue;const j=(ny*w+nx)*4;r+=copy[j];g+=copy[j+1];b+=copy[j+2];c++;}const j=i*4;d[j]=r/c;d[j+1]=g/c;d[j+2]=b/c;}}return out;}
+function applyCleanup(){if(!cleanupMask||!cleanupMask.some(v=>v))return;let count=0;for(const v of cleanupMask)count+=v;const pct=count/cleanupMask.length*100;if(pct>12){alert('除去範囲が大きすぎます。電線・小物・汚れ程度にしてください。');return;}const cur=octx.getImageData(0,0,canvas.width,canvas.height);imageHistory.push(cur);if(imageHistory.length>3)imageHistory.shift();const repaired=inpaintSmallObjects(cur,cleanupMask,canvas.width,canvas.height);octx.putImageData(repaired,0,0);sourcePixels=octx.getImageData(0,0,canvas.width,canvas.height).data;cleanupMask=new Uint8Array(canvas.width*canvas.height);brushMode=null;cleanupBtn.classList.remove('danger-active');schemeNotice.textContent='小物除去を適用しました。画像Undoで戻せます。';render();updateReady();}
+function undoImageEdit(){const prev=imageHistory.pop();if(!prev)return;octx.putImageData(prev,0,0);sourcePixels=octx.getImageData(0,0,canvas.width,canvas.height).data;render();updateReady();}
 
 
 const AUTO_LAYER_SOURCES=new Set(['AI自動認識','AI高精度','高速推定','高速推定（簡易）','自動推定','自動推定（簡易）','AI推定']);
@@ -506,11 +481,11 @@ async function runSegmentationAI(generation=photoGeneration,userRequested=false)
 
     installAiLayers(result);
     const roofText=result.roof?'屋根も認識しました。':'屋根は確信できないため自動指定していません。';
-    schemeNotice.textContent='AI外壁認識が完了しました。'+roofText+' 必要なら「色で範囲選択」や手動調整を使ってください。';
+    schemeNotice.textContent='AI外壁認識が完了しました。'+roofText+' 色を選んで「この色を適用」してください。';
   }catch(err){
     console.warn(err);
     if(generation===photoGeneration){
-      schemeNotice.textContent='AI自動認識に失敗しました。誤った範囲は表示せず、「色で範囲選択」または手動範囲指定に切り替えられます。';
+      schemeNotice.textContent='AI自動認識に失敗しました。誤った範囲は表示せず、手動範囲指定に切り替えられます。';
     }
   }finally{
     aiRunning=false;updateReady();
@@ -530,56 +505,34 @@ function applyCurrentPaint(){
 }
 function renderLayers(){
   layersEl.innerHTML='';if(!layers.length){layersEl.innerHTML='<div class="muted">まだ範囲がありません。</div>';updateReady();return;}
-  layers.forEach(l=>{const row=document.createElement('div');row.className='layer'+(l.id===selectedLayerId?' selected':'');row.innerHTML=`<div class="layer-dot" style="--c:${l.color}"></div><div class="layer-main"><div class="layer-title">${partName(l.part)} <span class="muted">${l.source}</span></div><div class="layer-sub">${escapeHtml(l.brand)} / ${escapeHtml(l.code)}</div></div><div class="layer-actions">${l.points?.length?'<button class="edit">編集</button>':''}<button class="toggle">${l.visible?'隠す':'表示'}</button><button class="del">削除</button></div>`;
-    row.onclick=e=>{if(!e.target.closest('button'))selectLayer(l.id);};
-    const editBtn=row.querySelector('.edit'); if(editBtn) editBtn.onclick=e=>{e.stopPropagation();selectLayer(l.id);startEditLayer(l.id);};
-    row.querySelector('.toggle').onclick=e=>{e.stopPropagation();l.visible=!l.visible;renderLayers();render();};
-    row.querySelector('.del').onclick=e=>{e.stopPropagation();layers=layers.filter(x=>x.id!==l.id);if(selectedLayerId===l.id)selectedLayerId=null;renderLayers();render();updateReady();};
-    layersEl.appendChild(row);});updateReady();
+  layers.forEach(l=>{const row=document.createElement('div');row.className='layer'+(l.id===selectedLayerId?' selected':'');row.innerHTML=`<div class="layer-dot" style="--c:${l.color}"></div><div class="layer-main"><div class="layer-title">${partName(l.part)} <span class="muted">${l.source}</span></div><div class="layer-sub">${escapeHtml(l.brand)} / ${escapeHtml(l.code)}</div></div><div class="layer-actions">${l.points?.length?'<button class="edit">編集</button>':''}<button class="toggle">${l.visible?'隠す':'表示'}</button><button class="del">削除</button></div>`;row.onclick=e=>{if(!e.target.closest('button'))selectLayer(l.id);};const eb=row.querySelector('.edit');if(eb)eb.onclick=e=>{e.stopPropagation();selectLayer(l.id);startEditLayer(l.id);};row.querySelector('.toggle').onclick=e=>{e.stopPropagation();l.visible=!l.visible;renderLayers();render();};row.querySelector('.del').onclick=e=>{e.stopPropagation();layers=layers.filter(x=>x.id!==l.id);if(selectedLayerId===l.id)selectedLayerId=null;renderLayers();render();updateReady();};layersEl.appendChild(row);});updateReady();
 }
 function partName(id){return PARTS.find(p=>p.id===id)?.name||id;}
 
 function render(){
   if(!imageLoaded)return;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(original,0,0);
-  if(!showingBefore){const img=ctx.getImageData(0,0,canvas.width,canvas.height),d=img.data;for(const l of layers)if(l.visible)applyLayerPixels(d,l);if(samplePreviewMask)applyPreviewPixels(d,samplePreviewMask);ctx.putImageData(img,0,0);}
-  if(!showingBefore&&samplePreviewMask)drawMaskOutline(samplePreviewMask,'rgba(0,163,255,.92)');
-  if(!showingBefore&&sampleSeed){ctx.save();ctx.beginPath();ctx.arc(sampleSeed.x,sampleSeed.y,Math.max(8,canvas.width/180),0,Math.PI*2);ctx.strokeStyle='#00a3ff';ctx.lineWidth=3;ctx.stroke();ctx.restore();}
-  if(!showingBefore&&selectedLayerId){
-    const sl=layers.find(x=>x.id===selectedLayerId);
-    if(sl && !sl.visible)drawMaskOutline(sl.mask,'rgba(255,255,255,.92)');
-  }
-  if(polygonMode&&currentPoints.length&&!showingBefore)drawPolygonGuide();
-  if(polygonMode&&loupe&&!showingBefore)drawLoupe(loupe.x,loupe.y);
+  if(!showingBefore){const img=ctx.getImageData(0,0,canvas.width,canvas.height),d=img.data;for(const l of layers)if(l.visible)applyLayerPixels(d,l);if(samplePreviewMask)applyMaskTint(d,samplePreviewMask,0,163,255,.52);if((brushMode==='add'||brushMode==='subtract')&&selectedLayerId){const l=layers.find(x=>x.id===selectedLayerId);if(l)applyMaskTint(d,l.mask,0,163,255,.25);}if(cleanupMask&&cleanupMask.some(v=>v))applyMaskTint(d,cleanupMask,220,38,38,.52);ctx.putImageData(img,0,0);}
+  if(!showingBefore&&samplePreviewMask)drawMaskOutline(samplePreviewMask,'rgba(0,163,255,.95)');if(!showingBefore&&sampleSeed){ctx.save();ctx.beginPath();ctx.arc(sampleSeed.x,sampleSeed.y,Math.max(8,canvas.width/180),0,Math.PI*2);ctx.strokeStyle='#00a3ff';ctx.lineWidth=3;ctx.stroke();ctx.restore();}
+  if(!showingBefore&&selectedLayerId&&!brushMode){const sl=layers.find(x=>x.id===selectedLayerId);if(sl&&!sl.visible)drawMaskOutline(sl.mask,'rgba(255,255,255,.92)');}if(polygonMode&&currentPoints.length&&!showingBefore)drawPolygonGuide();if((polygonMode||brushMode)&&loupe&&!showingBefore)drawLoupe(loupe.x,loupe.y);
 }
+function applyMaskTint(data,mask,r,g,b,a){for(let p=0,i=0;p<mask.length;p++,i+=4){if(!mask[p])continue;data[i]=Math.round(data[i]*(1-a)+r*a);data[i+1]=Math.round(data[i+1]*(1-a)+g*a);data[i+2]=Math.round(data[i+2]*(1-a)+b*a);}}
 function applyLayerPixels(data,l){
   const [tr,tg,tb]=hexToRgb(l.color),th=rgbToHsl(tr,tg,tb),s=l.strength??.82,m=l.mask;for(let p=0,i=0;p<m.length;p++,i+=4){if(!m[p])continue;const oh=rgbToHsl(data[i],data[i+1],data[i+2]);const light=Math.max(.035,Math.min(.97,th[2]*(.55+oh[2]*.95)));const sat=Math.min(1,th[1]*.9+oh[1]*.1);const [nr,ng,nb]=hslToRgb(th[0],sat,light);data[i]=Math.round(data[i]*(1-s)+nr*s);data[i+1]=Math.round(data[i+1]*(1-s)+ng*s);data[i+2]=Math.round(data[i+2]*(1-s)+nb*s);}
 }
 
-function drawMaskOutline(mask){
-  if(!mask||mask.length!==canvas.width*canvas.height)return;
-  const w=canvas.width,h=canvas.height;
-  ctx.save();
-  ctx.fillStyle='rgba(0,163,255,.78)';
-  const step=Math.max(1,Math.floor(Math.max(w,h)/900));
-  const dot=Math.max(1.2,w/850);
-  for(let y=step;y<h-step;y+=step){
-    for(let x=step;x<w-step;x+=step){
-      const i=y*w+x;if(!mask[i])continue;
-      if(!mask[i-1]||!mask[i+1]||!mask[i-w]||!mask[i+w]){
-        ctx.fillRect(x-dot/2,y-dot/2,dot,dot);
-      }
-    }
-  }
-  ctx.restore();
+function drawMaskOutline(mask,color='rgba(0,163,255,.78)'){
+  if(!mask||mask.length!==canvas.width*canvas.height)return;const w=canvas.width,h=canvas.height;ctx.save();ctx.fillStyle=color;const step=Math.max(1,Math.floor(Math.max(w,h)/900)),dot=Math.max(1.2,w/850);for(let y=step;y<h-step;y+=step)for(let x=step;x<w-step;x+=step){const i=y*w+x;if(!mask[i])continue;if(!mask[i-1]||!mask[i+1]||!mask[i-w]||!mask[i+w])ctx.fillRect(x-dot/2,y-dot/2,dot,dot);}ctx.restore();
 }
-
-function drawPolygonGuide(){ctx.save();ctx.beginPath();currentPoints.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineWidth=Math.max(3,canvas.width/420);ctx.strokeStyle='#00a3ff';ctx.setLineDash([12,8]);ctx.stroke();ctx.setLineDash([]);for(const [i,p] of currentPoints.entries()){ctx.beginPath();ctx.arc(p.x,p.y,Math.max(6,canvas.width/200),0,Math.PI*2);ctx.fillStyle=i?'#00a3ff':'#111827';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}ctx.restore();}
+function drawLoupe(x,y){
+  const radius=Math.max(44,canvas.width/10),zoom=2.4,srcR=radius/zoom;let lx=Math.min(canvas.width-radius-12,Math.max(radius+12,x+radius*.85)),ly=Math.max(radius+12,y-radius*.95);if(lx+radius>canvas.width)lx=x-radius*.85;const sx=clamp(x-srcR,0,Math.max(0,canvas.width-srcR*2)),sy=clamp(y-srcR,0,Math.max(0,canvas.height-srcR*2)),sw=Math.min(srcR*2,canvas.width-sx),sh=Math.min(srcR*2,canvas.height-sy),tmp=document.createElement('canvas');tmp.width=Math.max(1,Math.round(sw));tmp.height=Math.max(1,Math.round(sh));const tc=tmp.getContext('2d');try{tc.putImageData(ctx.getImageData(Math.round(sx),Math.round(sy),tmp.width,tmp.height),0,0);}catch(_){tc.drawImage(canvas,sx,sy,sw,sh,0,0,tmp.width,tmp.height);}ctx.save();ctx.beginPath();ctx.arc(lx,ly,radius,0,Math.PI*2);ctx.clip();ctx.drawImage(tmp,0,0,tmp.width,tmp.height,lx-radius,ly-radius,radius*2,radius*2);ctx.restore();ctx.save();ctx.beginPath();ctx.arc(lx,ly,radius,0,Math.PI*2);ctx.lineWidth=4;ctx.strokeStyle='#fff';ctx.stroke();ctx.beginPath();ctx.moveTo(lx-radius*.25,ly);ctx.lineTo(lx+radius*.25,ly);ctx.moveTo(lx,ly-radius*.25);ctx.lineTo(lx,ly+radius*.25);ctx.strokeStyle='#00a3ff';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+}
+function drawPolygonGuide(){ctx.save();ctx.beginPath();currentPoints.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineWidth=Math.max(3,canvas.width/420);ctx.strokeStyle='#00a3ff';ctx.setLineDash([12,8]);ctx.stroke();ctx.setLineDash([]);for(const [i,p] of currentPoints.entries()){ctx.beginPath();ctx.arc(p.x,p.y,Math.max(7,canvas.width/185),0,Math.PI*2);ctx.fillStyle=i?'#00a3ff':'#111827';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}ctx.restore();}
 
 function snapshotState(){return layers.map(l=>({id:l.id,color:l.color,brand:l.brand,code:l.code,strength:l.strength,visible:l.visible}));}
 function restoreState(state){for(const s of state){const l=layers.find(x=>x.id===s.id);if(l)Object.assign(l,s);}renderLayers();render();}
 function saveScheme(k){if(!layers.length)return;schemes[k]={savedAt:new Date().toISOString(),layers:snapshotState()};document.querySelector(`.scheme-group[data-scheme="${k}"]`).classList.add('saved');schemeNotice.textContent=`${k}案を保存しました`;}
 function loadScheme(k){if(!schemes[k]){alert(`${k}案はまだ保存されていません。`);return;}restoreState(schemes[k].layers);schemeNotice.textContent=`${k}案を呼び出しました`;}
-function captureCurrent(){const prev=showingBefore;showingBefore=false;render();const u=canvas.toDataURL('image/jpeg',.88);showingBefore=prev;render();return u;}
+function captureCurrent(){const a=showingBefore,b=samplePreviewMask,c=sampleSeed,d=brushMode,e=loupe,f=polygonMode,g=selectedLayerId,h=cleanupMask;showingBefore=false;samplePreviewMask=null;sampleSeed=null;brushMode=null;loupe=null;polygonMode=false;selectedLayerId=null;cleanupMask=null;render();const u=canvas.toDataURL('image/jpeg',.88);showingBefore=a;samplePreviewMask=b;sampleSeed=c;brushMode=d;loupe=e;polygonMode=f;selectedLayerId=g;cleanupMask=h;render();return u;}
 function captureBefore(){return original.toDataURL('image/jpeg',.88);}
 function captureScheme(k){if(!schemes[k])return null;const prev=snapshotState();for(const s of schemes[k].layers){const l=layers.find(x=>x.id===s.id);if(l)Object.assign(l,s);}const url=captureCurrent();for(const s of prev){const l=layers.find(x=>x.id===s.id);if(l)Object.assign(l,s);}render();return url;}
 
@@ -610,36 +563,16 @@ function saveProject(){
   try{const data={version:1,savedAt:new Date().toISOString(),image:captureBefore(),w:canvas.width,h:canvas.height,layers:layers.map(l=>({id:l.id,part:l.part,source:l.source,color:l.color,brand:l.brand,code:l.code,strength:l.strength,visible:l.visible,points:l.points,mask:packMask(l.mask)})),schemes,customer:{customerName:customerName.value,siteAddress:siteAddress.value,companyName:companyName.value,staffName:staffName.value,proposalMemo:proposalMemo.value}};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=safeFileName((customerName.value||'住宅')+'_塗り替え案件')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}catch(e){console.error(e);alert('案件保存に失敗しました。');}
 }
 async function loadProjectFile(file){
-  try{const data=JSON.parse(await file.text());if(!data.image||!data.w||!data.h)throw new Error('形式が違います');const img=await loadImage(data.image);setupImageCanvas(data.w,data.h);octx.clearRect(0,0,data.w,data.h);octx.drawImage(img,0,0,data.w,data.h);layers=(data.layers||[]).map(l=>({...l,mask:unpackMask(l.mask,data.w*data.h)}));schemes=data.schemes||{A:null,B:null,C:null};const c=data.customer||{};customerName.value=c.customerName||'';siteAddress.value=c.siteAddress||'';companyName.value=c.companyName||'';staffName.value=c.staffName||'';proposalMemo.value=c.proposalMemo||'';document.querySelectorAll('.scheme-group').forEach(g=>g.classList.toggle('saved',!!schemes[g.dataset.scheme]));selectedLayerId=null;polygonMode=false;sampleMode=false;currentPoints=[];editingLayerId=null;samplePreviewMask=null;sampleSeed=null;loupe=null;sourcePixels=octx.getImageData(0,0,data.w,data.h).data;canvasTip.hidden=true;renderLayers();updateReady();render();schemeNotice.textContent='案件を読み込みました';}catch(e){console.error(e);alert('案件ファイルを読み込めませんでした。');}
+  try{const data=JSON.parse(await file.text());if(!data.image||!data.w||!data.h)throw new Error('形式が違います');const img=await loadImage(data.image);setupImageCanvas(data.w,data.h);octx.clearRect(0,0,data.w,data.h);octx.drawImage(img,0,0,data.w,data.h);layers=(data.layers||[]).map(l=>({...l,mask:unpackMask(l.mask,data.w*data.h)}));schemes=data.schemes||{A:null,B:null,C:null};const c=data.customer||{};customerName.value=c.customerName||'';siteAddress.value=c.siteAddress||'';companyName.value=c.companyName||'';staffName.value=c.staffName||'';proposalMemo.value=c.proposalMemo||'';document.querySelectorAll('.scheme-group').forEach(g=>g.classList.toggle('saved',!!schemes[g.dataset.scheme]));selectedLayerId=null;polygonMode=false;sampleMode=false;currentPoints=[];editingLayerId=null;samplePreviewMask=null;sampleSeed=null;loupe=null;brushMode=null;maskHistory=[];cleanupMask=new Uint8Array(data.w*data.h);imageHistory=[];sourcePixels=octx.getImageData(0,0,data.w,data.h).data;resetView();sampleDock.hidden=true;canvasTip.hidden=true;renderLayers();updateReady();render();schemeNotice.textContent='案件を読み込みました';}catch(e){console.error(e);alert('案件ファイルを読み込めませんでした。');}
 }
 function packMask(mask){const bytes=new Uint8Array(Math.ceil(mask.length/8));for(let i=0;i<mask.length;i++)if(mask[i])bytes[i>>3]|=1<<(i&7);return bytesToBase64(bytes);}
 function unpackMask(b64,len){const bytes=base64ToBytes(b64),mask=new Uint8Array(len);for(let i=0;i<len;i++)mask[i]=(bytes[i>>3]>>(i&7))&1;return mask;}
 function bytesToBase64(bytes){let out='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)out+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(out);}
 function base64ToBytes(s){const b=atob(s),out=new Uint8Array(b.length);for(let i=0;i<b.length;i++)out[i]=b.charCodeAt(i);return out;}
-function getPixel(data,x,y,w){const i=(y*w+x)*4;return[data[i],data[i+1],data[i+2],data[i+3]];}
-function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
-function colorDistanceWeighted(r1,g1,b1,r2,g2,b2){
-  const y1=.299*r1+.587*g1+.114*b1, y2=.299*r2+.587*g2+.114*b2;
-  const cb1=b1-y1, cb2=b2-y2, cr1=r1-y1, cr2=r2-y2;
-  const dy=y1-y2, dcb=cb1-cb2, dcr=cr1-cr2;
-  return Math.sqrt(dcb*dcb+dcr*dcr+dy*dy*.18);
-}
-function floodFillByColor(seedX,seedY,tol){
-  const w=canvas.width,h=canvas.height,size=w*h; const mask=new Uint8Array(size), seen=new Uint8Array(size), q=new Int32Array(size);
-  const [sr,sg,sb,sa]=getPixel(sourcePixels,seedX,seedY,w); if(sa===0)return mask; const start=seedY*w+seedX; let head=0,tail=0;
-  q[tail++]=start; seen[start]=1;
-  while(head<tail){
-    const idx=q[head++], x=idx%w, y=(idx/w)|0; const i=idx*4;
-    if(colorDistanceWeighted(sourcePixels[i],sourcePixels[i+1],sourcePixels[i+2],sr,sg,sb)>tol)continue;
-    mask[idx]=1;
-    if(x>0){const n=idx-1;if(!seen[n]){seen[n]=1;q[tail++]=n;}}
-    if(x<w-1){const n=idx+1;if(!seen[n]){seen[n]=1;q[tail++]=n;}}
-    if(y>0){const n=idx-w;if(!seen[n]){seen[n]=1;q[tail++]=n;}}
-    if(y<h-1){const n=idx+w;if(!seen[n]){seen[n]=1;q[tail++]=n;}}
-  }
-  return mask;
-}
 
+function runSelfTest(){
+  try{setupImageCanvas(64,64);octx.fillStyle='#b7a58e';octx.fillRect(0,0,64,64);octx.fillStyle='#6f655a';octx.fillRect(10,10,44,8);sourcePixels=octx.getImageData(0,0,64,64).data;sampleSeed={x:20,y:30};sampleScope.value='connected';sampleTolerance.value='20';updateSamplePreview();if(!samplePreviewMask?.some(v=>v))throw new Error('connected-color');sampleScope.value='all';updateSamplePreview();if(!samplePreviewMask.some(v=>v))throw new Error('global-color');const m=new Uint8Array(64*64);paintCircle(m,32,32,6,1);if(!m.some(v=>v))throw new Error('brush');const rm=new Uint8Array(64*64);paintCircle(rm,20,20,3,1);const repaired=inpaintSmallObjects(octx.getImageData(0,0,64,64),rm,64,64);if(repaired.data.length!==64*64*4)throw new Error('inpaint');setViewScale(2);if(viewScale!==2)throw new Error('zoom');resetView();document.body.dataset.selftest='pass';document.body.dataset.selftestDetail='color,brush,inpaint,zoom';}catch(e){document.body.dataset.selftest='fail';document.body.dataset.selftestDetail=String(e?.message||e);console.error(e);}
+}
 
 function hexToRgb(hex){const v=parseInt(hex.slice(1),16);return[(v>>16)&255,(v>>8)&255,v&255];}
 function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;if(max!==min){const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4;}h/=6;}return[h,s,l];}
@@ -648,6 +581,7 @@ function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;',
 function safeFileName(s){return String(s).replace(/[\\/:*?"<>|]/g,'_').slice(0,80);}
 
 init();
+if(new URLSearchParams(location.search).get('selftest')==='1')setTimeout(runSelfTest,50);
 });
 
 </script>
@@ -656,7 +590,7 @@ init();
 <header class="topbar">
   <div class="brandbox">
     <div class="brand">住宅塗り替えカラー提案 Pro</div>
-    <div class="brand-sub">写真 → AI外壁認識 + 色抽出 + 手動補正 → 配色比較 → 提案書PDF　v1.7</div>
+    <div class="brand-sub">写真 → AI認識 / 色抽出 / 手動補正 → 配色比較 → 提案書PDF　v2.0</div>
   </div>
   <div class="top-actions">
     <label class="btn primary" for="photoInput">カメラで撮影</label>
@@ -668,6 +602,37 @@ init();
 
 <main class="layout">
   <section class="card work-card">
+    <div class="tool-dock view-dock" id="viewDock">
+      <span class="dock-title">表示</span>
+      <button id="zoomOutBtn" disabled>−</button>
+      <span class="zoom-value" id="zoomLabel">100%</span>
+      <button id="zoomInBtn" disabled>＋</button>
+      <button id="fitViewBtn" disabled>全体</button>
+      <button id="panBtn" disabled>移動</button>
+      <span class="mode-help">引きの写真はズームしてから範囲指定。2本指ピンチにも対応。</span>
+    </div>
+
+    <div class="sample-dock" id="sampleDock" hidden>
+      <div class="field">
+        <label>抽出方法</label>
+        <select id="sampleScope"><option value="connected">つながった範囲</option><option value="all">同系色すべて</option></select>
+      </div>
+      <div class="field">
+        <label>類似色の許容 <span id="sampleToleranceLabel">35</span></label>
+        <input id="sampleTolerance" type="range" min="5" max="160" value="35">
+      </div>
+      <div class="field">
+        <label>抽出元の色</label>
+        <input id="sampleColorPreview" type="color" value="#d2c3aa" disabled>
+      </div>
+      <div class="field status-box">
+        <label>選択状態</label>
+        <div class="notice" id="sampleStatus" style="margin-top:0">画像をタップして抽出を開始</div>
+      </div>
+      <button id="applySampleBtn" class="primary" disabled>この範囲を追加</button>
+      <div class="mode-help">スライダーを動かすと、青いマスクがリアルタイムに増減します。</div>
+    </div>
+
     <div class="canvas-shell" id="canvasShell">
       <div class="empty" id="emptyState">
         <strong>住宅写真を読み込んでください</strong>
@@ -683,11 +648,25 @@ init();
       </div>
     </div>
 
+    <div class="tool-dock edit-dock" id="editDock" hidden>
+      <span class="dock-title">範囲補正</span>
+      <button id="maskAddBtn">＋ブラシ</button>
+      <button id="maskSubtractBtn">−ブラシ</button>
+      <button id="maskUndoBtn" disabled>範囲Undo</button>
+      <div class="brush-field"><label>太さ <span id="brushSizeLabel">28</span></label><input id="brushSize" type="range" min="8" max="90" value="28"></div>
+      <span class="dock-spacer"></span>
+      <button id="cleanupBtn">小物除去ブラシ</button>
+      <button id="applyCleanupBtn" disabled>除去実行</button>
+      <button id="clearCleanupBtn" disabled>除去範囲クリア</button>
+      <button id="undoImageBtn" disabled>画像Undo</button>
+      <div class="mode-help">窓・玄関・植栽は「−ブラシ」で塗装範囲から除外。電線・小さな汚れは赤い「小物除去ブラシ」でなぞって除去。</div>
+      <div class="cleanup-note">小物除去は簡易修復です。大きな車・樹木・人物の自然な生成除去には向きません。</div>
+    </div>
+
     <div class="toolbar">
       <button id="aiBtn" class="primary" disabled>AI認識を再実行</button>
       <button id="polygonBtn" disabled>手動で範囲指定</button>
       <button id="sampleBtn" disabled>色で範囲選択</button>
-      <button id="applySampleBtn" disabled>抽出範囲を追加</button>
       <button id="finishPolygonBtn" disabled>範囲を確定</button>
       <button id="undoPointBtn" disabled>1点戻す</button>
       <button id="beforeBtn" disabled>施工前を長押し</button>
@@ -711,21 +690,7 @@ init();
         <label>手動範囲の部位</label>
         <select id="partSelect"></select>
       </div>
-      <div class="field compact">
-        <label>類似色の許容 <span id="sampleToleranceLabel">35</span></label>
-        <input id="sampleTolerance" type="range" min="8" max="140" value="35">
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>抽出元の色</label>
-          <input id="sampleColorPreview" type="color" value="#d2c3aa" disabled>
-        </div>
-        <div class="field">
-          <label>色抽出の状態</label>
-          <div class="notice" id="sampleStatus" style="margin-top:0">まだ抽出していません</div>
-        </div>
-      </div>
-      <div class="notice">写真を読み込むとAIが外壁・建物・屋根を画素単位で認識します。さらに「色で範囲選択」で壁の色をタップし、類似色スライダーで範囲を確認しながら抽出できます。手動ポリゴンは点をドラッグで動かせて、タッチ位置は拡大表示されます。</div>
+      <div class="notice">写真を読み込むとAIが外壁・建物・屋根を画素単位で認識します。根拠のない横帯推定は行いません。雨樋・破風・軒天などAIで安定判定しにくい部位は、誤判定を避けるため手動補正を使います。</div>
     </section>
 
     <section class="card panel">
