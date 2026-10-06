@@ -15,8 +15,6 @@
 @media(max-width:900px){.topbar{padding:10px 12px;align-items:flex-start}.top-actions{gap:6px}.top-actions .btn{padding:9px 10px;font-size:12px}.brand{font-size:15px}.brand-sub{display:none}.layout{grid-template-columns:1fr;padding:9px}.work-card{position:static}.canvas-shell{min-height:43vh}.canvas-shell canvas{max-height:56vh}.sidebar{gap:9px}.palette{grid-template-columns:repeat(5,1fr)}.swatch .label{display:none}.scheme-notice{width:100%;margin-left:0}.part-grid{grid-template-columns:repeat(5,1fr)}.part-chip{font-size:10px;padding:8px 4px}}
 
 </style>
-  <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow-models/deeplab@0.2.2/dist/deeplab.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script>
 document.addEventListener('DOMContentLoaded',()=>{
@@ -70,7 +68,13 @@ let octx = original.getContext('2d',{willReadFrequently:true});
 let imageLoaded=false, showingBefore=false, polygonMode=false, currentPoints=[];
 let activePart='wall', selectedLayerId=null, currentPalette='日本ペイント ND';
 let layers=[], schemes={A:null,B:null,C:null};
+let autoDetectRunning=false;
+let highAiRunning=false;
 let aiModel=null;
+let aiModelPromise=null;
+let aiScriptsPromise=null;
+let photoGeneration=0;
+let aiLateApplyGeneration=0;
 
 function init(){
   renderPartControls(); renderPaletteTabs(); renderPalette(); wire();
@@ -81,7 +85,7 @@ function wire(){
   photoInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadPhotoFile(f);});
   libraryInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadPhotoFile(f);});
   projectInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadProjectFile(f);});
-  aiBtn.addEventListener('click', runAI);
+  aiBtn.addEventListener('click', ()=>runHighPrecisionAI(photoGeneration,true));
   polygonBtn.addEventListener('click', startPolygon);
   finishPolygonBtn.addEventListener('click', finishPolygon);
   undoPointBtn.addEventListener('click', ()=>{currentPoints.pop(); updatePolygonButtons(); render();});
@@ -134,6 +138,8 @@ function renderPalette(){
 
 async function loadPhotoFile(file){
   if(!file) return;
+  ++photoGeneration;
+  aiLateApplyGeneration=0;
   aiOverlay.style.removeProperty('display'); aiOverlay.hidden=false;
   aiStatus.textContent='写真を読み込んでいます…';
   if(aiSubstatus) aiSubstatus.textContent='iPhone内の写真を処理しています。';
@@ -156,9 +162,11 @@ async function loadPhotoFile(file){
       octx.drawImage(img,0,0,w,h);
       resetProjectVisuals();
       render();
-      schemeNotice.textContent='写真を読み込みました';
+      const generation=photoGeneration;
+      schemeNotice.textContent='写真を読み込みました。高速推定を開始します…';
       aiOverlay.hidden=true;
       emptyState.hidden=true;
+      setTimeout(()=>runHybridDetection(generation),60);
     }catch(err){
       console.error(err);
       alert('写真を処理できませんでした。別の写真を選び直してください。');
@@ -181,6 +189,7 @@ function resetProjectVisuals(){
 
 function updateReady(){
   [aiBtn,polygonBtn,beforeBtn,clearLayersBtn,pdfBtn,saveProjectBtn].forEach(b=>b.disabled=!imageLoaded);
+  if(highAiRunning)aiBtn.disabled=true;
   applyColorBtn.disabled=!imageLoaded || (!selectedLayerId && !layers.some(l=>l.part===activePart));
   clearLayersBtn.disabled=!imageLoaded || layers.length===0; pdfBtn.disabled=!imageLoaded || layers.length===0;
 }
@@ -205,55 +214,392 @@ function polygonToMask(points,w,h){
   const d=x.getImageData(0,0,w,h).data,m=new Uint8Array(w*h);for(let i=0,j=0;i<d.length;i+=4,j++)m[j]=d[i+3]>0?1:0;return m;
 }
 
-async function runAI(){
-  if(!imageLoaded)return; aiOverlay.style.removeProperty('display');aiOverlay.hidden=false;aiBtn.disabled=true;aiStatus.textContent='AIモデルを準備しています…';if(aiSubstatus) aiSubstatus.textContent='初回はAIモデルの読み込みで通信が発生します。';
-  try{
-    if(!window.tf || !window.deeplab) throw new Error('AIライブラリを読み込めません。通信環境を確認してください。');
-    if(!aiModel){ await tf.ready(); aiStatus.textContent='建物認識モデルを読み込んでいます…'; aiModel=await deeplab.load({base:'cityscapes',quantizationBytes:1}); }
-    aiStatus.textContent='住宅写真を解析しています…';
-    const aiCanvas=document.createElement('canvas'); const max=640,sc=Math.min(1,max/Math.max(original.width,original.height)); aiCanvas.width=Math.max(1,Math.round(original.width*sc));aiCanvas.height=Math.max(1,Math.round(original.height*sc));
-    aiCanvas.getContext('2d').drawImage(original,0,0,aiCanvas.width,aiCanvas.height);
-    const result=await aiModel.segment(aiCanvas);
-    aiStatus.textContent='建物領域から部位候補を作っています…';
-    const lowMask=extractBuildingComponent(result);
-    if(!lowMask) throw new Error('建物を認識できませんでした。手動範囲指定を使ってください。');
-    const base=upscaleMask(lowMask.mask,lowMask.w,lowMask.h,canvas.width,canvas.height);
-    const generated=derivePartMasks(base,canvas.width,canvas.height);
-    // remove previous AI generated layers only, keep manual corrections
-    layers=layers.filter(l=>l.source!=='AI推定');
-    const defaults={wall:['#d2c3aa','日本ペイント','ND-105'],roof:['#444a4f','屋根標準','ダークグレー'],gutter:['#333333','付帯部','チャコール'],fascia:['#45413d','付帯部','ダーク'],soffit:['#e7e3da','付帯部','ホワイト']};
-    ['wall','roof','soffit','fascia','gutter'].forEach(part=>{
-      const mask=generated[part]; if(mask && mask.some(v=>v)){const [color,brand,code]=defaults[part];addLayer({part,source:'AI推定',mask,color,brand,code,strength:.82},false);}
-    });
-    renderLayers();updateReady();render();schemeNotice.textContent='AI候補を作成しました。必要な箇所は手動で補正してください。';
-  }catch(err){console.error(err);alert(err.message||'AI解析に失敗しました。手動範囲指定はそのまま使用できます。');}
-  finally{aiOverlay.hidden=true;aiOverlay.style.display='none';aiBtn.disabled=false;}
+
+const AUTO_LAYER_SOURCES=new Set(['高速推定','高速推定（簡易）','AI高精度','自動推定','自動推定（簡易）','AI推定']);
+const DEFAULT_PAINT={
+  wall:['#d2c3aa','日本ペイント','ND-105'],
+  roof:['#444a4f','屋根標準','ダークグレー'],
+  gutter:['#333333','付帯部','チャコール'],
+  fascia:['#45413d','付帯部','ダーク'],
+  soffit:['#e7e3da','付帯部','ホワイト']
+};
+
+function isAutoLayer(l){return AUTO_LAYER_SOURCES.has(l.source);}
+
+function currentPaintByPart(){
+  const out={};
+  for(const l of layers){
+    if(isAutoLayer(l) && !out[l.part]){
+      out[l.part]={color:l.color,brand:l.brand,code:l.code,strength:l.strength,visible:l.visible};
+    }
+  }
+  return out;
 }
 
-function extractBuildingComponent(result){
-  const legend=result.legend||{}, entry=Object.entries(legend).find(([k])=>k.toLowerCase()==='building') || Object.entries(legend).find(([k])=>k.toLowerCase().includes('building'));
-  if(!entry)return null; const rgb=entry[1],w=result.width,h=result.height,map=result.segmentationMap;
-  const bin=new Uint8Array(w*h); let hits=0; for(let i=0,p=0;i<map.length;i+=4,p++){if(map[i]===rgb[0]&&map[i+1]===rgb[1]&&map[i+2]===rgb[2]){bin[p]=1;hits++;}}
-  if(hits<50)return null;
-  const seen=new Uint8Array(bin.length);let best=null;const qx=new Int32Array(bin.length),qy=new Int32Array(bin.length);
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const idx=y*w+x;if(!bin[idx]||seen[idx])continue;let head=0,tail=0,count=0,minX=x,maxX=x,minY=y,maxY=y;qx[tail]=x;qy[tail++]=y;seen[idx]=1;
-    while(head<tail){const cx=qx[head],cy=qy[head++];count++;if(cx<minX)minX=cx;if(cx>maxX)maxX=cx;if(cy<minY)minY=cy;if(cy>maxY)maxY=cy;
-      const ns=[[cx-1,cy],[cx+1,cy],[cx,cy-1],[cx,cy+1]];for(const [nx,ny] of ns){if(nx<0||ny<0||nx>=w||ny>=h)continue;const ni=ny*w+nx;if(bin[ni]&&!seen[ni]){seen[ni]=1;qx[tail]=nx;qy[tail++]=ny;}}
+function installGeneratedLayers(generated,source,preservePaint=true){
+  const saved=preservePaint?currentPaintByPart():{};
+  const selectedPart=layers.find(l=>l.id===selectedLayerId)?.part||activePart;
+  layers=layers.filter(l=>!isAutoLayer(l));
+  ['wall','roof','soffit','fascia','gutter'].forEach(part=>{
+    const mask=generated[part];
+    if(!mask || !mask.some(v=>v)) return;
+    const [defColor,defBrand,defCode]=DEFAULT_PAINT[part];
+    const keep=saved[part]||{};
+    addLayer({
+      part,source,mask,
+      color:keep.color||defColor,
+      brand:keep.brand||defBrand,
+      code:keep.code||defCode,
+      strength:keep.strength??.82,
+      visible:keep.visible!==false
+    },false);
+  });
+  const selected=layers.find(l=>l.part===selectedPart && isAutoLayer(l)) ||
+                 layers.find(l=>l.part==='wall' && isAutoLayer(l));
+  selectedLayerId=selected?.id||null;
+  if(selected) activePart=selected.part;
+  renderLayers(); updateReady(); render();
+}
+
+async function runHybridDetection(generation){
+  if(!imageLoaded || generation!==photoGeneration)return;
+  await runFastDetection(generation);
+  if(!imageLoaded || generation!==photoGeneration)return;
+  setTimeout(()=>runHighPrecisionAI(generation,false),80);
+}
+
+async function runFastDetection(generation){
+  if(!imageLoaded || autoDetectRunning || generation!==photoGeneration)return;
+  autoDetectRunning=true;
+  aiOverlay.style.removeProperty('display');
+  aiOverlay.hidden=false;
+  aiStatus.textContent='まず高速推定しています…';
+  if(aiSubstatus) aiSubstatus.textContent='すぐ操作できる候補を先に表示します。';
+  try{
+    await new Promise(r=>setTimeout(r,35));
+    let low=autoExtractBuildingMask();
+    let source='高速推定';
+    if(!low || low.hits<Math.max(80,low.w*low.h*.035)){
+      low=fallbackBuildingMask();
+      source='高速推定（簡易）';
     }
-    const containsCenter=minX<w*.55&&maxX>w*.45&&minY<h*.72&&maxY>h*.30; const score=count*(containsCenter?1.35:1);
-    if(!best||score>best.score)best={score,count,minX,maxX,minY,maxY,coords:tail};
-  }
-  if(!best)return null;
-  // second pass: keep component with same bounding/size score target by flood finding the best component again
-  seen.fill(0); let winnerMask=null,winnerScore=-1;
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const idx=y*w+x;if(!bin[idx]||seen[idx])continue;let head=0,tail=0,count=0,minX=x,maxX=x,minY=y,maxY=y;const inds=[];qx[tail]=x;qy[tail++]=y;seen[idx]=1;
-    while(head<tail){const cx=qx[head],cy=qy[head++],ci=cy*w+cx;inds.push(ci);count++;if(cx<minX)minX=cx;if(cx>maxX)maxX=cx;if(cy<minY)minY=cy;if(cy>maxY)maxY=cy;
-      const ns=[[cx-1,cy],[cx+1,cy],[cx,cy-1],[cx,cy+1]];for(const [nx,ny] of ns){if(nx<0||ny<0||nx>=w||ny>=h)continue;const ni=ny*w+nx;if(bin[ni]&&!seen[ni]){seen[ni]=1;qx[tail]=nx;qy[tail++]=ny;}}
+    if(generation!==photoGeneration)return;
+    const base=upscaleMask(low.mask,low.w,low.h,canvas.width,canvas.height);
+    installGeneratedLayers(derivePartMasks(base,canvas.width,canvas.height),source,false);
+    schemeNotice.textContent=source==='高速推定'
+      ?'高速推定を表示しました。高精度AIで自動補正中…'
+      :'簡易候補を表示しました。高精度AIで自動補正中…';
+  }catch(err){
+    console.error(err);
+    try{
+      const low=fallbackBuildingMask();
+      const base=upscaleMask(low.mask,low.w,low.h,canvas.width,canvas.height);
+      installGeneratedLayers(derivePartMasks(base,canvas.width,canvas.height),'高速推定（簡易）',false);
+      schemeNotice.textContent='簡易候補を表示しました。高精度AIで自動補正中…';
+    }catch(e){
+      console.error(e);
+      schemeNotice.textContent='高速推定に失敗しました。手動範囲指定は使用できます。';
     }
-    const containsCenter=minX<w*.55&&maxX>w*.45&&minY<h*.72&&maxY>h*.30;const score=count*(containsCenter?1.35:1);
-    if(score>winnerScore){winnerScore=score;winnerMask=new Uint8Array(w*h);for(const i of inds)winnerMask[i]=1;}
+  }finally{
+    aiOverlay.hidden=true;
+    aiOverlay.style.display='none';
+    autoDetectRunning=false;
   }
-  return winnerMask?{mask:winnerMask,w,h}:null;
+}
+
+function loadScriptOnce(src,id,timeoutMs=15000){
+  if((id==='tfjs-loader'&&window.tf)||(id==='deeplab-loader'&&window.deeplab)) return Promise.resolve();
+  return new Promise((resolve,reject)=>{
+    let el=document.getElementById(id),done=false;
+    const timer=setTimeout(()=>finish(new Error('AIライブラリの通信がタイムアウトしました')),timeoutMs);
+    function finish(err){
+      if(done)return; done=true; clearTimeout(timer);
+      err?reject(err):resolve();
+    }
+    if(!el){
+      el=document.createElement('script');
+      el.id=id; el.src=src; el.async=true; el.crossOrigin='anonymous';
+      document.head.appendChild(el);
+    }
+    el.addEventListener('load',()=>finish(),{once:true});
+    el.addEventListener('error',()=>finish(new Error('AIライブラリを読み込めませんでした')),{once:true});
+  });
+}
+
+async function ensureAiScripts(){
+  if(window.tf && window.deeplab)return;
+  if(!aiScriptsPromise){
+    aiScriptsPromise=(async()=>{
+      if(!window.tf){
+        await loadScriptOnce('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js','tfjs-loader',18000);
+      }
+      if(window.tf){try{await tf.ready();}catch(_){}}
+      if(!window.deeplab){
+        await loadScriptOnce('https://cdn.jsdelivr.net/npm/@tensorflow-models/deeplab@0.2.2/dist/deeplab.min.js','deeplab-loader',12000);
+      }
+    })().catch(err=>{aiScriptsPromise=null;throw err;});
+  }
+  return aiScriptsPromise;
+}
+
+function withTimeout(promise,ms,label='処理'){
+  return new Promise((resolve,reject)=>{
+    const t=setTimeout(()=>reject(new Error(label+'がタイムアウトしました')),ms);
+    promise.then(v=>{clearTimeout(t);resolve(v);},e=>{clearTimeout(t);reject(e);});
+  });
+}
+
+async function ensureAiModel(){
+  await ensureAiScripts();
+  if(aiModel)return aiModel;
+  if(!window.tf || !window.deeplab)throw new Error('高精度AIを準備できませんでした');
+  try{
+    if(tf.getBackend()!=='webgl'){
+      try{await tf.setBackend('webgl');await tf.ready();}catch(_){}
+    }
+  }catch(_){}
+  if(!aiModelPromise){
+    aiModelPromise=deeplab.load({base:'ade20k',quantizationBytes:1})
+      .then(m=>{aiModel=m;return m;})
+      .catch(err=>{aiModelPromise=null;throw err;});
+  }
+  return aiModelPromise;
+}
+
+function colorKey(rgb){return rgb.join(',');}
+
+function deepLabMasks(result){
+  const legend=result.legend||{},map=result.segmentationMap,w=result.width,h=result.height;
+  if(!map||!w||!h)return null;
+  const names=Object.keys(legend);
+  const findNames=terms=>names.filter(n=>terms.some(t=>n.toLowerCase()===t||n.toLowerCase().includes(t)));
+  const includeNames=findNames(['building','house','wall']);
+  const roofNames=findNames(['roof']);
+  const excludeNames=findNames(['windowpane','window','door','sky']);
+  if(!includeNames.length)return null;
+
+  const include=new Set(includeNames.map(n=>colorKey(legend[n])));
+  const roofSet=new Set(roofNames.map(n=>colorKey(legend[n])));
+  const exclude=new Set(excludeNames.map(n=>colorKey(legend[n])));
+  let base=new Uint8Array(w*h),roofDirect=new Uint8Array(w*h),excludeMask=new Uint8Array(w*h);
+  let hits=0,roofHits=0;
+
+  for(let p=0,i=0;p<w*h;p++,i+=4){
+    const k=map[i]+','+map[i+1]+','+map[i+2];
+    if(include.has(k)){base[p]=1;hits++;}
+    if(roofSet.has(k)){roofDirect[p]=1;roofHits++;}
+    if(exclude.has(k))excludeMask[p]=1;
+  }
+  if(hits<Math.max(40,w*h*.008))return null;
+  base=morphClose(base,w,h,1);
+  const comp=largestCenterComponent(base,w,h);
+  if(comp?.mask)base=comp.mask;
+  return {base,roofDirect,excludeMask,w,h,hits,roofHits};
+}
+
+function subtractMask(a,b){
+  const out=new Uint8Array(a.length);
+  for(let i=0;i<a.length;i++)out[i]=a[i]&&!b[i]?1:0;
+  return out;
+}
+
+function mergeDirectAiParts(ai){
+  const upBase=upscaleMask(ai.base,ai.w,ai.h,canvas.width,canvas.height);
+  const generated=derivePartMasks(upBase,canvas.width,canvas.height);
+  const exclusion=upscaleMask(ai.excludeMask,ai.w,ai.h,canvas.width,canvas.height);
+  if(generated.wall)generated.wall=subtractMask(generated.wall,exclusion);
+  if(ai.roofHits>Math.max(20,ai.w*ai.h*.002)){
+    const directRoof=upscaleMask(ai.roofDirect,ai.w,ai.h,canvas.width,canvas.height);
+    if(directRoof.some(v=>v))generated.roof=directRoof;
+  }
+  return generated;
+}
+
+async function runHighPrecisionAI(generation=photoGeneration,userRequested=false){
+  if(!imageLoaded||generation!==photoGeneration||highAiRunning)return;
+  highAiRunning=true;
+  aiBtn.disabled=true;
+  schemeNotice.textContent=userRequested
+    ?'高速推定はそのまま使えます。高精度AIを再解析中…'
+    :'高速推定を表示中。高精度AIでバックグラウンド補正中…';
+
+  try{
+    const modelPromise=ensureAiModel();
+    let model;
+    try{
+      model=await withTimeout(modelPromise,22000,'高精度AIの準備');
+    }catch(timeoutErr){
+      aiLateApplyGeneration=generation;
+      modelPromise.then(()=>{
+        if(aiLateApplyGeneration===generation&&generation===photoGeneration){
+          setTimeout(()=>runHighPrecisionAI(generation,false),50);
+        }
+      }).catch(()=>{});
+      schemeNotice.textContent='高速推定で操作できます。高精度AIは裏で読み込みを継続しています。';
+      return;
+    }
+    if(generation!==photoGeneration)return;
+
+    const aiCanvas=document.createElement('canvas');
+    const max=513,sc=Math.min(1,max/Math.max(original.width,original.height));
+    aiCanvas.width=Math.max(1,Math.round(original.width*sc));
+    aiCanvas.height=Math.max(1,Math.round(original.height*sc));
+    aiCanvas.getContext('2d').drawImage(original,0,0,aiCanvas.width,aiCanvas.height);
+
+    const result=await withTimeout(model.segment(aiCanvas),18000,'高精度AI解析');
+    if(generation!==photoGeneration)return;
+    const ai=deepLabMasks(result);
+    if(!ai)throw new Error('建物を高精度AIで特定できませんでした');
+
+    installGeneratedLayers(mergeDirectAiParts(ai),'AI高精度',true);
+    schemeNotice.textContent='高精度AIの自動補正が完了しました。必要な箇所だけ手動で微調整できます。';
+    aiLateApplyGeneration=0;
+  }catch(err){
+    console.warn('High precision AI unavailable:',err);
+    if(generation===photoGeneration){
+      schemeNotice.textContent='高速推定結果を使用中。高精度AIは利用できませんでした（手動補正可能）。';
+    }
+  }finally{
+    highAiRunning=false;
+    aiBtn.disabled=false;
+  }
+}
+
+function autoExtractBuildingMask(){
+  const maxDim=220;
+  const sc=Math.min(1,maxDim/Math.max(original.width,original.height));
+  const w=Math.max(72,Math.round(original.width*sc));
+  const h=Math.max(72,Math.round(original.height*sc));
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const x=c.getContext('2d',{willReadFrequently:true});
+  x.drawImage(original,0,0,w,h);
+  const px=x.getImageData(0,0,w,h).data;
+  const n=w*h;
+  const lum=new Float32Array(n), grad=new Float32Array(n);
+  const rgb=(i)=>[px[i*4],px[i*4+1],px[i*4+2]];
+  for(let i=0;i<n;i++) lum[i]=.299*px[i*4]+.587*px[i*4+1]+.114*px[i*4+2];
+  for(let yy=1;yy<h-1;yy++) for(let xx=1;xx<w-1;xx++){
+    const i=yy*w+xx;
+    const gx=Math.abs(lum[i+1]-lum[i-1]);
+    const gy=Math.abs(lum[i+w]-lum[i-w]);
+    grad[i]=Math.min(255,gx+gy);
+  }
+
+  // Learn several background colors from the image border (sky, road, neighboring scene).
+  const samples=[];
+  const step=Math.max(1,Math.floor(Math.min(w,h)/70));
+  for(let yy=0;yy<h;yy+=step) for(let xx=0;xx<w;xx+=step){
+    const border=yy<h*.13 || xx<w*.055 || xx>w*.945 || yy>h*.94;
+    if(border){const i=yy*w+xx;samples.push(rgb(i));}
+  }
+  const centers=kmeansColors(samples,5,5);
+  const colorDist=(r,g,b)=>{
+    let best=1e9;
+    for(const q of centers){const dr=r-q[0],dg=g-q[1],db=b-q[2];const d=dr*dr+dg*dg+db*db;if(d<best)best=d;}
+    return Math.sqrt(best);
+  };
+
+  const raw=new Uint8Array(n);
+  let rawCount=0;
+  for(let yy=0;yy<h;yy++) for(let xx=0;xx<w;xx++){
+    const i=yy*w+xx, r=px[i*4],g=px[i*4+1],b=px[i*4+2];
+    const xn=(xx+.5)/w, yn=(yy+.5)/h;
+    const dx=Math.abs(xn-.5)/.5;
+    const centerPrior=Math.max(0,1-dx)*.58 + Math.max(0,1-Math.abs(yn-.56)/.56)*.35;
+    const bd=Math.min(1,colorDist(r,g,b)/115);
+    const ed=Math.min(1,grad[i]/92);
+    const maxc=Math.max(r,g,b), minc=Math.min(r,g,b), sat=maxc?((maxc-minc)/maxc):0;
+    const vegetation=(g>r*1.10 && g>b*1.06 && sat>.16)?1:0;
+    let score=bd*.72 + ed*.46 + centerPrior*.52 - vegetation*.28;
+    if(yn<.16) score-=.42;
+    if(yn>.94) score-=.22;
+    if(xn<.035 || xn>.965) score-=.30;
+    if(score>.74){raw[i]=1;rawCount++;}
+  }
+
+  let mask=morphClose(raw,w,h,2);
+  mask=morphClose(mask,w,h,1);
+  const comp=largestCenterComponent(mask,w,h);
+  if(!comp) return null;
+  mask=comp.mask;
+
+  // Fill short holes inside each detected row to produce a usable facade silhouette.
+  const bb=componentBounds(mask,w,h);
+  if(!bb) return null;
+  const filled=new Uint8Array(n);
+  for(let yy=bb.minY;yy<=bb.maxY;yy++){
+    let left=w,right=-1,hits=0;
+    for(let xx=bb.minX;xx<=bb.maxX;xx++) if(mask[yy*w+xx]){left=Math.min(left,xx);right=Math.max(right,xx);hits++;}
+    if(right>=left && hits>=Math.max(2,(right-left+1)*.08)){
+      for(let xx=left;xx<=right;xx++){
+        const i=yy*w+xx;
+        // Preserve strong background-looking voids only near the outer edges.
+        if(xx>left+2 && xx<right-2) filled[i]=1; else filled[i]=mask[i];
+      }
+    }
+  }
+  const smoothed=morphClose(filled,w,h,1);
+  let hits=0;for(const v of smoothed)hits+=v;
+  return {mask:smoothed,w,h,hits};
+}
+
+function kmeansColors(samples,k,iterations){
+  if(!samples.length)return [[128,128,128]];
+  k=Math.min(k,samples.length);
+  const centers=[];
+  for(let i=0;i<k;i++) centers.push(samples[Math.floor(i*(samples.length-1)/Math.max(1,k-1))].slice());
+  for(let it=0;it<iterations;it++){
+    const sums=Array.from({length:k},()=>[0,0,0,0]);
+    for(const s of samples){
+      let bi=0,bd=1e18;
+      for(let j=0;j<k;j++){const c=centers[j],dr=s[0]-c[0],dg=s[1]-c[1],db=s[2]-c[2],d=dr*dr+dg*dg+db*db;if(d<bd){bd=d;bi=j;}}
+      const a=sums[bi];a[0]+=s[0];a[1]+=s[1];a[2]+=s[2];a[3]++;
+    }
+    for(let j=0;j<k;j++){const a=sums[j];if(a[3])centers[j]=[a[0]/a[3],a[1]/a[3],a[2]/a[3]];}
+  }
+  return centers;
+}
+
+function morphClose(src,w,h,r){return erodeMask(dilateMask(src,w,h,r),w,h,r);}
+function dilateMask(src,w,h,r){
+  const out=new Uint8Array(src.length);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let on=0;for(let yy=Math.max(0,y-r);yy<=Math.min(h-1,y+r)&&!on;yy++)for(let xx=Math.max(0,x-r);xx<=Math.min(w-1,x+r);xx++)if(src[yy*w+xx]){on=1;break;}out[y*w+x]=on;}
+  return out;
+}
+function erodeMask(src,w,h,r){
+  const out=new Uint8Array(src.length);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let on=1;for(let yy=y-r;yy<=y+r&&on;yy++)for(let xx=x-r;xx<=x+r;xx++){if(xx<0||yy<0||xx>=w||yy>=h||!src[yy*w+xx]){on=0;break;}}out[y*w+x]=on;}
+  return out;
+}
+function largestCenterComponent(src,w,h){
+  const seen=new Uint8Array(src.length), q=new Int32Array(src.length);let bestMask=null,bestScore=-1,bestCount=0;
+  for(let i=0;i<src.length;i++){
+    if(!src[i]||seen[i])continue;
+    let head=0,tail=0; q[tail++]=i;seen[i]=1;const inds=[];let sumX=0,sumY=0,minX=w,maxX=0,minY=h,maxY=0;
+    while(head<tail){const idx=q[head++],x=idx%w,y=(idx/w)|0;inds.push(idx);sumX+=x;sumY+=y;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+      const ns=[idx-1,idx+1,idx-w,idx+w];
+      for(const ni of ns){if(ni<0||ni>=src.length||seen[ni]||!src[ni])continue;const nx=ni%w,ny=(ni/w)|0;if(Math.abs(nx-x)+Math.abs(ny-y)!==1)continue;seen[ni]=1;q[tail++]=ni;}
+    }
+    const count=inds.length,cx=sumX/count,cy=sumY/count;
+    const central=1-Math.min(1,Math.abs(cx-w*.5)/(w*.5));
+    const vertical=1-Math.min(1,Math.abs(cy-h*.56)/(h*.56));
+    const spanBonus=((maxX-minX)/w)*.5+((maxY-minY)/h)*.5;
+    const score=count*(.72+.34*central+.18*vertical+.22*spanBonus);
+    if(score>bestScore){bestScore=score;bestCount=count;bestMask=new Uint8Array(src.length);for(const j of inds)bestMask[j]=1;}
+  }
+  return bestMask?{mask:bestMask,count:bestCount}:null;
+}
+function componentBounds(mask,w,h){let minX=w,maxX=-1,minY=h,maxY=-1,count=0;for(let i=0;i<mask.length;i++)if(mask[i]){const x=i%w,y=(i/w)|0;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);count++;}return count?{minX,maxX,minY,maxY,count}:null;}
+
+function fallbackBuildingMask(){
+  const maxDim=180,sc=Math.min(1,maxDim/Math.max(original.width,original.height));
+  const w=Math.max(72,Math.round(original.width*sc)),h=Math.max(72,Math.round(original.height*sc));
+  const mask=new Uint8Array(w*h);
+  // Conservative central house-shaped polygon: roof narrower at top, body wider below.
+  const pts=[[.17,.28],[.34,.18],[.72,.18],[.90,.33],[.91,.88],[.10,.88],[.10,.42]];
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0]*w,p[1]*h):x.moveTo(p[0]*w,p[1]*h));x.closePath();x.fill();
+  const d=x.getImageData(0,0,w,h).data;let hits=0;for(let i=0,j=0;i<d.length;i+=4,j++)if(d[i+3]){mask[j]=1;hits++;}
+  return {mask,w,h,hits};
 }
 
 function upscaleMask(src,sw,sh,dw,dh){const out=new Uint8Array(dw*dh);for(let y=0;y<dh;y++){const sy=Math.min(sh-1,Math.floor(y*sh/dh));for(let x=0;x<dw;x++){const sx=Math.min(sw-1,Math.floor(x*sw/dw));out[y*dw+x]=src[sy*sw+sx];}}return out;}
@@ -349,7 +695,7 @@ init();
 <header class="topbar">
   <div class="brandbox">
     <div class="brand">住宅塗り替えカラー提案 Pro</div>
-    <div class="brand-sub">写真 → AI候補抽出 → 配色比較 → 提案書PDF　v1.3</div>
+    <div class="brand-sub">写真 → 高速推定 → 高精度AI自動補正 → 配色比較 → 提案書PDF　v1.5</div>
   </div>
   <div class="top-actions">
     <label class="btn primary" for="photoInput">カメラで撮影</label>
@@ -371,13 +717,13 @@ init();
       <div class="canvas-tip" id="canvasTip" hidden>角を順番にタップしてください。3点以上で範囲を確定できます。</div>
       <div class="ai-overlay" id="aiOverlay" hidden>
         <div class="spinner"></div>
-        <b id="aiStatus">AIで建物を解析しています…</b>
-        <small id="aiSubstatus">処理中です。少しお待ちください。</small>
+        <b id="aiStatus">建物候補を作成しています…</b>
+        <small id="aiSubstatus">まず高速推定を表示します。</small>
       </div>
     </div>
 
     <div class="toolbar">
-      <button id="aiBtn" class="primary" disabled>AIで部位候補を作る</button>
+      <button id="aiBtn" class="primary" disabled>高精度AIを再試行</button>
       <button id="polygonBtn" disabled>手動で範囲指定</button>
       <button id="finishPolygonBtn" disabled>範囲を確定</button>
       <button id="undoPointBtn" disabled>1点戻す</button>
@@ -402,7 +748,7 @@ init();
         <label>手動範囲の部位</label>
         <select id="partSelect"></select>
       </div>
-      <div class="notice">AI候補は外壁を中心に推定し、屋根・雨樋・破風・軒天は建物形状から候補を作ります。最終確認は手動で行ってください。</div>
+      <div class="notice">写真を読み込むと、まず端末内の高速推定ですぐ候補を表示し、その後バックグラウンドの高精度AIで建物境界を自動補正します。AIが失敗しても高速推定結果はそのまま使えます。必要な部分だけ手動で補正できます。</div>
     </section>
 
     <section class="card panel">
