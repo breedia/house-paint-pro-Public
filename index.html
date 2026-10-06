@@ -57,24 +57,23 @@ const PALETTES = {
 const $ = id => document.getElementById(id);
 const photoInput=$('photoInput'), libraryInput=$('libraryInput'), projectInput=$('projectInput'), canvas=$('mainCanvas'), ctx=canvas.getContext('2d',{willReadFrequently:true});
 const canvasShell=$('canvasShell'), emptyState=$('emptyState'), canvasTip=$('canvasTip'), canvasBadge=$('canvasBadge'), aiOverlay=$('aiOverlay'), aiStatus=$('aiStatus'), aiSubstatus=$('aiSubstatus');
-const aiBtn=$('aiBtn'), polygonBtn=$('polygonBtn'), finishPolygonBtn=$('finishPolygonBtn'), undoPointBtn=$('undoPointBtn'), beforeBtn=$('beforeBtn'), clearLayersBtn=$('clearLayersBtn');
+const aiBtn=$('aiBtn'), polygonBtn=$('polygonBtn'), sampleBtn=$('sampleBtn'), applySampleBtn=$('applySampleBtn'), finishPolygonBtn=$('finishPolygonBtn'), undoPointBtn=$('undoPointBtn'), beforeBtn=$('beforeBtn'), clearLayersBtn=$('clearLayersBtn');
 const partGrid=$('partGrid'), partSelect=$('partSelect'), paletteTabs=$('paletteTabs'), paletteEl=$('palette'), layersEl=$('layers');
 const brandInput=$('brandInput'), codeInput=$('codeInput'), customColor=$('customColor'), strength=$('strength'), strengthLabel=$('strengthLabel'), applyColorBtn=$('applyColorBtn');
+const sampleTolerance=$('sampleTolerance'), sampleToleranceLabel=$('sampleToleranceLabel'), sampleColorPreview=$('sampleColorPreview'), sampleStatus=$('sampleStatus');
 const customerName=$('customerName'), siteAddress=$('siteAddress'), companyName=$('companyName'), staffName=$('staffName'), proposalMemo=$('proposalMemo'), pdfBtn=$('pdfBtn');
 const saveProjectBtn=$('saveProjectBtn'), schemeNotice=$('schemeNotice');
 
 let original = document.createElement('canvas');
 let octx = original.getContext('2d',{willReadFrequently:true});
-let imageLoaded=false, showingBefore=false, polygonMode=false, currentPoints=[];
+let imageLoaded=false, showingBefore=false, polygonMode=false, sampleMode=false, currentPoints=[];
 let activePart='wall', selectedLayerId=null, currentPalette='日本ペイント ND';
 let layers=[], schemes={A:null,B:null,C:null};
-let autoDetectRunning=false;
-let highAiRunning=false;
-let aiModel=null;
-let aiModelPromise=null;
-let aiScriptsPromise=null;
+let aiRunning=false, draggingPointIndex=-1, editingLayerId=null, loupe=null, sourcePixels=null, samplePreviewMask=null, sampleSeed=null, sampleRecalcTimer=0;
+let segmenter=null;
+let segmenterPromise=null;
+let transformersPromise=null;
 let photoGeneration=0;
-let aiLateApplyGeneration=0;
 
 function init(){
   renderPartControls(); renderPaletteTabs(); renderPalette(); wire();
@@ -85,15 +84,20 @@ function wire(){
   photoInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadPhotoFile(f);});
   libraryInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadPhotoFile(f);});
   projectInput.addEventListener('change', e=>{const f=e.target.files?.[0]; if(f) loadProjectFile(f);});
-  aiBtn.addEventListener('click', ()=>runHighPrecisionAI(photoGeneration,true));
+  aiBtn.addEventListener('click', ()=>runSegmentationAI(photoGeneration,true));
   polygonBtn.addEventListener('click', startPolygon);
+  sampleBtn.addEventListener('click', startSampleMode);
+  applySampleBtn.addEventListener('click', applySampleMask);
   finishPolygonBtn.addEventListener('click', finishPolygon);
   undoPointBtn.addEventListener('click', ()=>{currentPoints.pop(); updatePolygonButtons(); render();});
   beforeBtn.addEventListener('pointerdown',()=>setBefore(true));
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>beforeBtn.addEventListener(ev,()=>setBefore(false)));
-  clearLayersBtn.addEventListener('click',()=>{if(confirm('作成した部位範囲をすべて削除しますか？')){layers=[];selectedLayerId=null;renderLayers();render();updateReady();}});
+  clearLayersBtn.addEventListener('click',()=>{if(confirm('作成した部位範囲をすべて削除しますか？')){layers=[];selectedLayerId=null;samplePreviewMask=null;sampleSeed=null;renderLayers();render();updateReady();}});
   canvas.addEventListener('pointerdown', canvasPointerDown);
+  canvas.addEventListener('pointermove', canvasPointerMove);
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>canvas.addEventListener(ev, canvasPointerUp));
   strength.addEventListener('input',()=>strengthLabel.textContent=strength.value+'%');
+  sampleTolerance.addEventListener('input',()=>{sampleToleranceLabel.textContent=sampleTolerance.value; scheduleSamplePreview();});
   customColor.addEventListener('input',()=>document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active')));
   applyColorBtn.addEventListener('click', applyCurrentPaint);
   pdfBtn.addEventListener('click', createProposalPDF);
@@ -139,7 +143,6 @@ function renderPalette(){
 async function loadPhotoFile(file){
   if(!file) return;
   ++photoGeneration;
-  aiLateApplyGeneration=0;
   aiOverlay.style.removeProperty('display'); aiOverlay.hidden=false;
   aiStatus.textContent='写真を読み込んでいます…';
   if(aiSubstatus) aiSubstatus.textContent='iPhone内の写真を処理しています。';
@@ -163,10 +166,10 @@ async function loadPhotoFile(file){
       resetProjectVisuals();
       render();
       const generation=photoGeneration;
-      schemeNotice.textContent='写真を読み込みました。高速推定を開始します…';
+      schemeNotice.textContent='写真を読み込みました。AI外壁認識を開始します…';
       aiOverlay.hidden=true;
       emptyState.hidden=true;
-      setTimeout(()=>runHybridDetection(generation),60);
+      setTimeout(()=>runSegmentationAI(generation,false),80);
     }catch(err){
       console.error(err);
       alert('写真を処理できませんでした。別の写真を選び直してください。');
@@ -179,35 +182,85 @@ async function loadPhotoFile(file){
   img.src=url;
 }
 function setupImageCanvas(w,h){
-  canvas.width=original.width=w; canvas.height=original.height=h; canvas.hidden=false; emptyState.hidden=true; imageLoaded=true;
+  canvas.width=original.width=w; canvas.height=original.height=h; canvas.hidden=false; emptyState.hidden=true; imageLoaded=true; sourcePixels=octx.getImageData(0,0,w,h).data;
 }
 function resetProjectVisuals(){
-  layers=[];schemes={A:null,B:null,C:null};selectedLayerId=null;currentPoints=[];polygonMode=false;
+  layers=[];schemes={A:null,B:null,C:null};selectedLayerId=null;currentPoints=[];polygonMode=false;sampleMode=false;draggingPointIndex=-1;editingLayerId=null;samplePreviewMask=null;sampleSeed=null;loupe=null;
   document.querySelectorAll('.scheme-group').forEach(g=>g.classList.remove('saved'));
   schemeNotice.textContent='未保存'; renderLayers(); updateReady();
 }
 
 function updateReady(){
-  [aiBtn,polygonBtn,beforeBtn,clearLayersBtn,pdfBtn,saveProjectBtn].forEach(b=>b.disabled=!imageLoaded);
-  if(highAiRunning)aiBtn.disabled=true;
+  [aiBtn,polygonBtn,sampleBtn,beforeBtn,clearLayersBtn,pdfBtn,saveProjectBtn].forEach(b=>b.disabled=!imageLoaded);
+  if(aiRunning)aiBtn.disabled=true;
+  finishPolygonBtn.disabled=currentPoints.length<3;
+  undoPointBtn.disabled=currentPoints.length===0;
+  applySampleBtn.disabled=!samplePreviewMask;
   applyColorBtn.disabled=!imageLoaded || (!selectedLayerId && !layers.some(l=>l.part===activePart));
   clearLayersBtn.disabled=!imageLoaded || layers.length===0; pdfBtn.disabled=!imageLoaded || layers.length===0;
 }
 function setBefore(v){showingBefore=v;canvasBadge.hidden=!v;canvasBadge.textContent='施工前';render();}
-
+function pointFromEvent(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};}
+function findNearbyPointIndex(p){
+  const r=canvas.getBoundingClientRect();
+  const threshold=28*canvas.width/r.width;
+  for(let i=currentPoints.length-1;i>=0;i--){
+    const q=currentPoints[i],dx=p.x-q.x,dy=p.y-q.y;
+    if(dx*dx+dy*dy<=threshold*threshold)return i;
+  }
+  return -1;
+}
+function clearInteractionPreview(){sampleMode=false;samplePreviewMask=null;sampleSeed=null;clearTimeout(sampleRecalcTimer);}
 function startPolygon(){
-  if(!imageLoaded)return; polygonMode=true; currentPoints=[]; canvasTip.hidden=false; canvasTip.textContent=`${partName(activePart)}の角を順番にタップ → 「範囲を確定」`;
-  updatePolygonButtons(); render();
+  if(!imageLoaded)return; clearInteractionPreview(); polygonMode=true; currentPoints=[]; draggingPointIndex=-1; editingLayerId=null; loupe=null; canvasTip.hidden=false; canvasTip.textContent=`${partName(activePart)}の角をタップ。既存の点はドラッグで移動できます。`;
+  updateReady(); render();
+}
+function startEditLayer(id){
+  const l=layers.find(x=>x.id===id); if(!l||!l.points?.length)return;
+  clearInteractionPreview(); polygonMode=true; editingLayerId=id; currentPoints=l.points.map(p=>({...p})); draggingPointIndex=-1; loupe=null; activePart=l.part; partSelect.value=l.part; canvasTip.hidden=false; canvasTip.textContent='点をドラッグして調整 → 「範囲を確定」'; updateReady(); render();
+}
+function startSampleMode(){
+  if(!imageLoaded)return; polygonMode=false; currentPoints=[]; draggingPointIndex=-1; editingLayerId=null; sampleMode=true; samplePreviewMask=null; sampleSeed=null; loupe=null; canvasTip.hidden=false; canvasTip.textContent='壁の色を取りたい場所をタップ。類似色スライダーで範囲を調整できます。'; sampleStatus.textContent='まだ抽出していません'; updateReady(); render();
 }
 function canvasPointerDown(e){
-  if(!polygonMode || showingBefore)return; e.preventDefault(); const r=canvas.getBoundingClientRect();
-  currentPoints.push({x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}); updatePolygonButtons(); render();
+  if(showingBefore)return; const p=pointFromEvent(e);
+  if(sampleMode){e.preventDefault(); handleSampleTap(p); return;}
+  if(!polygonMode)return; e.preventDefault();
+  const found=findNearbyPointIndex(p);
+  if(found>=0){draggingPointIndex=found; currentPoints[found]=p;} else {currentPoints.push(p); draggingPointIndex=currentPoints.length-1;}
+  loupe={x:p.x,y:p.y}; updateReady(); render();
 }
-function updatePolygonButtons(){finishPolygonBtn.disabled=currentPoints.length<3;undoPointBtn.disabled=currentPoints.length===0;}
+function canvasPointerMove(e){
+  if(!polygonMode||draggingPointIndex<0||showingBefore)return;
+  e.preventDefault(); const p=pointFromEvent(e); currentPoints[draggingPointIndex]=p; loupe={x:p.x,y:p.y}; render();
+}
+function canvasPointerUp(){ if(draggingPointIndex>=0){draggingPointIndex=-1; loupe=null; render();} }
+function updatePolygonButtons(){updateReady();}
 function finishPolygon(){
   if(currentPoints.length<3)return; const mask=polygonToMask(currentPoints,canvas.width,canvas.height);
-  addLayer({part:activePart,source:'手動',mask,points:currentPoints.map(p=>({...p})),color:customColor.value,brand:brandInput.value.trim()||'カスタム',code:codeInput.value.trim()||'任意色',strength:Number(strength.value)/100});
-  polygonMode=false;currentPoints=[];canvasTip.hidden=true;updatePolygonButtons();render();
+  if(editingLayerId){
+    const layer=layers.find(l=>l.id===editingLayerId); if(layer){layer.mask=mask;layer.points=currentPoints.map(p=>({...p})); selectLayer(layer.id);} 
+  }else{
+    addLayer({part:activePart,source:'手動',mask,points:currentPoints.map(p=>({...p})),color:customColor.value,brand:brandInput.value.trim()||'カスタム',code:codeInput.value.trim()||'任意色',strength:Number(strength.value)/100,visible:false});
+  }
+  polygonMode=false;currentPoints=[];editingLayerId=null;canvasTip.hidden=true;loupe=null;updateReady();render();
+}
+function handleSampleTap(p){
+  sampleSeed={x:Math.max(0,Math.min(canvas.width-1,Math.round(p.x))),y:Math.max(0,Math.min(canvas.height-1,Math.round(p.y)))};
+  const [r,g,b]=getPixel(sourcePixels,sampleSeed.x,sampleSeed.y,canvas.width); sampleColorPreview.value=rgbToHex(r,g,b); updateSamplePreview();
+}
+function scheduleSamplePreview(){ sampleToleranceLabel.textContent=sampleTolerance.value; clearTimeout(sampleRecalcTimer); if(!sampleSeed)return; sampleRecalcTimer=setTimeout(updateSamplePreview,40); }
+function applySampleMask(){
+  if(!samplePreviewMask)return;
+  addLayer({part:activePart,source:'色抽出',mask:samplePreviewMask.slice(),color:customColor.value,brand:brandInput.value.trim()||'カスタム',code:codeInput.value.trim()||'任意色',strength:Number(strength.value)/100,visible:false});
+  sampleMode=false; samplePreviewMask=null; sampleSeed=null; canvasTip.hidden=true; sampleStatus.textContent='抽出範囲を追加しました'; updateReady(); render();
+}
+function updateSamplePreview(){
+  if(!sampleSeed||!sourcePixels)return;
+  const tol=Number(sampleTolerance.value); sampleToleranceLabel.textContent=String(tol);
+  samplePreviewMask=floodFillByColor(sampleSeed.x,sampleSeed.y,tol);
+  const count=samplePreviewMask.reduce((a,b)=>a+b,0); sampleStatus.textContent=count?`選択中: ${count.toLocaleString()} px`:'選択できる範囲がありません';
+  render(); updateReady();
 }
 function polygonToMask(points,w,h){
   const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.beginPath();points.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.closePath();x.fill();
@@ -215,13 +268,11 @@ function polygonToMask(points,w,h){
 }
 
 
-const AUTO_LAYER_SOURCES=new Set(['高速推定','高速推定（簡易）','AI高精度','自動推定','自動推定（簡易）','AI推定']);
+
+const AUTO_LAYER_SOURCES=new Set(['AI自動認識','AI高精度','高速推定','高速推定（簡易）','自動推定','自動推定（簡易）','AI推定']);
 const DEFAULT_PAINT={
   wall:['#d2c3aa','日本ペイント','ND-105'],
-  roof:['#444a4f','屋根標準','ダークグレー'],
-  gutter:['#333333','付帯部','チャコール'],
-  fascia:['#45413d','付帯部','ダーク'],
-  soffit:['#e7e3da','付帯部','ホワイト']
+  roof:['#444a4f','屋根標準','ダークグレー']
 };
 
 function isAutoLayer(l){return AUTO_LAYER_SOURCES.has(l.source);}
@@ -236,112 +287,6 @@ function currentPaintByPart(){
   return out;
 }
 
-function installGeneratedLayers(generated,source,preservePaint=true){
-  const saved=preservePaint?currentPaintByPart():{};
-  const selectedPart=layers.find(l=>l.id===selectedLayerId)?.part||activePart;
-  layers=layers.filter(l=>!isAutoLayer(l));
-  ['wall','roof','soffit','fascia','gutter'].forEach(part=>{
-    const mask=generated[part];
-    if(!mask || !mask.some(v=>v)) return;
-    const [defColor,defBrand,defCode]=DEFAULT_PAINT[part];
-    const keep=saved[part]||{};
-    addLayer({
-      part,source,mask,
-      color:keep.color||defColor,
-      brand:keep.brand||defBrand,
-      code:keep.code||defCode,
-      strength:keep.strength??.82,
-      visible:keep.visible!==false
-    },false);
-  });
-  const selected=layers.find(l=>l.part===selectedPart && isAutoLayer(l)) ||
-                 layers.find(l=>l.part==='wall' && isAutoLayer(l));
-  selectedLayerId=selected?.id||null;
-  if(selected) activePart=selected.part;
-  renderLayers(); updateReady(); render();
-}
-
-async function runHybridDetection(generation){
-  if(!imageLoaded || generation!==photoGeneration)return;
-  await runFastDetection(generation);
-  if(!imageLoaded || generation!==photoGeneration)return;
-  setTimeout(()=>runHighPrecisionAI(generation,false),80);
-}
-
-async function runFastDetection(generation){
-  if(!imageLoaded || autoDetectRunning || generation!==photoGeneration)return;
-  autoDetectRunning=true;
-  aiOverlay.style.removeProperty('display');
-  aiOverlay.hidden=false;
-  aiStatus.textContent='まず高速推定しています…';
-  if(aiSubstatus) aiSubstatus.textContent='すぐ操作できる候補を先に表示します。';
-  try{
-    await new Promise(r=>setTimeout(r,35));
-    let low=autoExtractBuildingMask();
-    let source='高速推定';
-    if(!low || low.hits<Math.max(80,low.w*low.h*.035)){
-      low=fallbackBuildingMask();
-      source='高速推定（簡易）';
-    }
-    if(generation!==photoGeneration)return;
-    const base=upscaleMask(low.mask,low.w,low.h,canvas.width,canvas.height);
-    installGeneratedLayers(derivePartMasks(base,canvas.width,canvas.height),source,false);
-    schemeNotice.textContent=source==='高速推定'
-      ?'高速推定を表示しました。高精度AIで自動補正中…'
-      :'簡易候補を表示しました。高精度AIで自動補正中…';
-  }catch(err){
-    console.error(err);
-    try{
-      const low=fallbackBuildingMask();
-      const base=upscaleMask(low.mask,low.w,low.h,canvas.width,canvas.height);
-      installGeneratedLayers(derivePartMasks(base,canvas.width,canvas.height),'高速推定（簡易）',false);
-      schemeNotice.textContent='簡易候補を表示しました。高精度AIで自動補正中…';
-    }catch(e){
-      console.error(e);
-      schemeNotice.textContent='高速推定に失敗しました。手動範囲指定は使用できます。';
-    }
-  }finally{
-    aiOverlay.hidden=true;
-    aiOverlay.style.display='none';
-    autoDetectRunning=false;
-  }
-}
-
-function loadScriptOnce(src,id,timeoutMs=15000){
-  if((id==='tfjs-loader'&&window.tf)||(id==='deeplab-loader'&&window.deeplab)) return Promise.resolve();
-  return new Promise((resolve,reject)=>{
-    let el=document.getElementById(id),done=false;
-    const timer=setTimeout(()=>finish(new Error('AIライブラリの通信がタイムアウトしました')),timeoutMs);
-    function finish(err){
-      if(done)return; done=true; clearTimeout(timer);
-      err?reject(err):resolve();
-    }
-    if(!el){
-      el=document.createElement('script');
-      el.id=id; el.src=src; el.async=true; el.crossOrigin='anonymous';
-      document.head.appendChild(el);
-    }
-    el.addEventListener('load',()=>finish(),{once:true});
-    el.addEventListener('error',()=>finish(new Error('AIライブラリを読み込めませんでした')),{once:true});
-  });
-}
-
-async function ensureAiScripts(){
-  if(window.tf && window.deeplab)return;
-  if(!aiScriptsPromise){
-    aiScriptsPromise=(async()=>{
-      if(!window.tf){
-        await loadScriptOnce('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js','tfjs-loader',18000);
-      }
-      if(window.tf){try{await tf.ready();}catch(_){}}
-      if(!window.deeplab){
-        await loadScriptOnce('https://cdn.jsdelivr.net/npm/@tensorflow-models/deeplab@0.2.2/dist/deeplab.min.js','deeplab-loader',12000);
-      }
-    })().catch(err=>{aiScriptsPromise=null;throw err;});
-  }
-  return aiScriptsPromise;
-}
-
 function withTimeout(promise,ms,label='処理'){
   return new Promise((resolve,reject)=>{
     const t=setTimeout(()=>reject(new Error(label+'がタイムアウトしました')),ms);
@@ -349,265 +294,227 @@ function withTimeout(promise,ms,label='処理'){
   });
 }
 
-async function ensureAiModel(){
-  await ensureAiScripts();
-  if(aiModel)return aiModel;
-  if(!window.tf || !window.deeplab)throw new Error('高精度AIを準備できませんでした');
-  try{
-    if(tf.getBackend()!=='webgl'){
-      try{await tf.setBackend('webgl');await tf.ready();}catch(_){}
+async function getTransformers(){
+  if(transformersPromise)return transformersPromise;
+  transformersPromise=import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1')
+    .then(mod=>{
+      try{
+        mod.env.allowLocalModels=false;
+        mod.env.useBrowserCache=true;
+      }catch(_){}
+      return mod;
+    })
+    .catch(err=>{transformersPromise=null;throw err;});
+  return transformersPromise;
+}
+
+async function getSegmenter(){
+  if(segmenter)return segmenter;
+  if(segmenterPromise)return segmenterPromise;
+  segmenterPromise=(async()=>{
+    const {pipeline}=await getTransformers();
+    return await pipeline(
+      'image-segmentation',
+      'Xenova/segformer-b0-finetuned-ade-512-512',
+      {dtype:'q8'}
+    );
+  })().then(x=>{segmenter=x;return x;})
+    .catch(err=>{segmenterPromise=null;throw err;});
+  return segmenterPromise;
+}
+
+function rawMaskToBinary(raw){
+  if(!raw || !raw.data || !raw.width || !raw.height)return null;
+  const w=raw.width,h=raw.height,data=raw.data;
+  const channels=raw.channels || Math.max(1,Math.round(data.length/(w*h)));
+  const out=new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++){
+    let v=data[i*channels] ?? data[i] ?? 0;
+    if(channels>=4 && data[i*channels+3]!==undefined) v=Math.max(v,data[i*channels+3]);
+    out[i]=v>80?1:0;
+  }
+  return {mask:out,w,h};
+}
+
+function upscaleMask(src,sw,sh,dw,dh){
+  const out=new Uint8Array(dw*dh);
+  for(let y=0;y<dh;y++){
+    const sy=Math.min(sh-1,Math.floor(y*sh/dh));
+    for(let x=0;x<dw;x++){
+      const sx=Math.min(sw-1,Math.floor(x*sw/dw));
+      out[y*dw+x]=src[sy*sw+sx];
     }
-  }catch(_){}
-  if(!aiModelPromise){
-    aiModelPromise=deeplab.load({base:'ade20k',quantizationBytes:1})
-      .then(m=>{aiModel=m;return m;})
-      .catch(err=>{aiModelPromise=null;throw err;});
   }
-  return aiModelPromise;
-}
-
-function colorKey(rgb){return rgb.join(',');}
-
-function deepLabMasks(result){
-  const legend=result.legend||{},map=result.segmentationMap,w=result.width,h=result.height;
-  if(!map||!w||!h)return null;
-  const names=Object.keys(legend);
-  const findNames=terms=>names.filter(n=>terms.some(t=>n.toLowerCase()===t||n.toLowerCase().includes(t)));
-  const includeNames=findNames(['building','house','wall']);
-  const roofNames=findNames(['roof']);
-  const excludeNames=findNames(['windowpane','window','door','sky']);
-  if(!includeNames.length)return null;
-
-  const include=new Set(includeNames.map(n=>colorKey(legend[n])));
-  const roofSet=new Set(roofNames.map(n=>colorKey(legend[n])));
-  const exclude=new Set(excludeNames.map(n=>colorKey(legend[n])));
-  let base=new Uint8Array(w*h),roofDirect=new Uint8Array(w*h),excludeMask=new Uint8Array(w*h);
-  let hits=0,roofHits=0;
-
-  for(let p=0,i=0;p<w*h;p++,i+=4){
-    const k=map[i]+','+map[i+1]+','+map[i+2];
-    if(include.has(k)){base[p]=1;hits++;}
-    if(roofSet.has(k)){roofDirect[p]=1;roofHits++;}
-    if(exclude.has(k))excludeMask[p]=1;
-  }
-  if(hits<Math.max(40,w*h*.008))return null;
-  base=morphClose(base,w,h,1);
-  const comp=largestCenterComponent(base,w,h);
-  if(comp?.mask)base=comp.mask;
-  return {base,roofDirect,excludeMask,w,h,hits,roofHits};
-}
-
-function subtractMask(a,b){
-  const out=new Uint8Array(a.length);
-  for(let i=0;i<a.length;i++)out[i]=a[i]&&!b[i]?1:0;
   return out;
 }
 
-function mergeDirectAiParts(ai){
-  const upBase=upscaleMask(ai.base,ai.w,ai.h,canvas.width,canvas.height);
-  const generated=derivePartMasks(upBase,canvas.width,canvas.height);
-  const exclusion=upscaleMask(ai.excludeMask,ai.w,ai.h,canvas.width,canvas.height);
-  if(generated.wall)generated.wall=subtractMask(generated.wall,exclusion);
-  if(ai.roofHits>Math.max(20,ai.w*ai.h*.002)){
-    const directRoof=upscaleMask(ai.roofDirect,ai.w,ai.h,canvas.width,canvas.height);
-    if(directRoof.some(v=>v))generated.roof=directRoof;
-  }
-  return generated;
+function unionInto(dst,src){
+  for(let i=0;i<dst.length;i++)if(src[i])dst[i]=1;
 }
 
-async function runHighPrecisionAI(generation=photoGeneration,userRequested=false){
-  if(!imageLoaded||generation!==photoGeneration||highAiRunning)return;
-  highAiRunning=true;
-  aiBtn.disabled=true;
+function resizeBinary(src,sw,sh,dw,dh){
+  if(sw===dw&&sh===dh)return src;
+  return upscaleMask(src,sw,sh,dw,dh);
+}
+
+function largestCentralComponent(mask,w,h){
+  const seen=new Uint8Array(mask.length);
+  let bestMask=null,bestScore=0;
+  const q=new Int32Array(mask.length);
+  for(let start=0;start<mask.length;start++){
+    if(!mask[start]||seen[start])continue;
+    let head=0,tail=0,count=0,sumX=0,sumY=0,minX=w,maxX=0,minY=h,maxY=0;
+    const members=[];
+    q[tail++]=start;seen[start]=1;
+    while(head<tail){
+      const i=q[head++],x=i%w,y=(i/w)|0;
+      members.push(i);count++;sumX+=x;sumY+=y;
+      if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+      if(x>0){const n=i-1;if(mask[n]&&!seen[n]){seen[n]=1;q[tail++]=n;}}
+      if(x<w-1){const n=i+1;if(mask[n]&&!seen[n]){seen[n]=1;q[tail++]=n;}}
+      if(y>0){const n=i-w;if(mask[n]&&!seen[n]){seen[n]=1;q[tail++]=n;}}
+      if(y<h-1){const n=i+w;if(mask[n]&&!seen[n]){seen[n]=1;q[tail++]=n;}}
+    }
+    const cx=sumX/count,cy=sumY/count;
+    const center=1-Math.min(1,Math.abs(cx-w*.5)/(w*.5));
+    const size=count/(w*h);
+    const span=((maxX-minX+1)/w)+((maxY-minY+1)/h);
+    const score=count*(0.65+0.4*center+0.18*span+(size>.06?0.15:0));
+    if(score>bestScore){
+      bestScore=score;
+      bestMask=new Uint8Array(mask.length);
+      for(const i of members)bestMask[i]=1;
+    }
+  }
+  return bestMask;
+}
+
+function maskBounds(mask,w,h){
+  let minX=w,maxX=-1,minY=h,maxY=-1,count=0;
+  for(let i=0;i<mask.length;i++)if(mask[i]){
+    const x=i%w,y=(i/w)|0;count++;
+    if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+  }
+  return count?{minX,maxX,minY,maxY,count}:null;
+}
+
+function keepNearBounds(mask,w,h,bounds,pad=.08){
+  if(!bounds)return mask;
+  const px=Math.round(w*pad),py=Math.round(h*pad);
+  const minX=Math.max(0,bounds.minX-px),maxX=Math.min(w-1,bounds.maxX+px);
+  const minY=Math.max(0,bounds.minY-py),maxY=Math.min(h-1,bounds.maxY+py);
+  const out=new Uint8Array(mask.length);
+  for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){
+    const i=y*w+x;if(mask[i])out[i]=1;
+  }
+  return out;
+}
+
+function collectSemanticMasks(output){
+  let baseW=0,baseH=0;
+  const wallItems=[],roofItems=[];
+  const labels=[];
+  for(const item of output||[]){
+    const label=String(item.label||'').toLowerCase();
+    labels.push(label);
+    const b=rawMaskToBinary(item.mask);
+    if(!b)continue;
+    if(!baseW){baseW=b.w;baseH=b.h;}
+    if(label==='wall'||label==='building'||label.includes('house'))wallItems.push(b);
+    if(label==='roof'||label.includes('roof'))roofItems.push(b);
+  }
+  if(!baseW||!wallItems.length)return {wall:null,roof:null,labels};
+
+  let wall=new Uint8Array(baseW*baseH);
+  for(const b of wallItems)unionInto(wall,resizeBinary(b.mask,b.w,b.h,baseW,baseH));
+  wall=largestCentralComponent(wall,baseW,baseH)||wall;
+
+  const wb=maskBounds(wall,baseW,baseH);
+  const wallCoverage=wb?wb.count/(baseW*baseH):0;
+  if(!wb || wallCoverage<.015 || wallCoverage>.82)return {wall:null,roof:null,labels};
+
+  let roof=null;
+  if(roofItems.length){
+    roof=new Uint8Array(baseW*baseH);
+    for(const b of roofItems)unionInto(roof,resizeBinary(b.mask,b.w,b.h,baseW,baseH));
+    roof=keepNearBounds(roof,baseW,baseH,wb,.12);
+    roof=largestCentralComponent(roof,baseW,baseH)||roof;
+    const rb=maskBounds(roof,baseW,baseH);
+    if(!rb || rb.count/(baseW*baseH)<.002)roof=null;
+  }
+  return {wall:{mask:wall,w:baseW,h:baseH},roof:roof?{mask:roof,w:baseW,h:baseH}:null,labels};
+}
+
+function installAiLayers(result){
+  const saved=currentPaintByPart();
+  const manual=layers.filter(l=>!isAutoLayer(l));
+  layers=[...manual];
+
+  const generated=[];
+  if(result.wall){
+    generated.push({
+      part:'wall',
+      mask:upscaleMask(result.wall.mask,result.wall.w,result.wall.h,canvas.width,canvas.height)
+    });
+  }
+  if(result.roof){
+    generated.push({
+      part:'roof',
+      mask:upscaleMask(result.roof.mask,result.roof.w,result.roof.h,canvas.width,canvas.height)
+    });
+  }
+
+  for(const g of generated){
+    const [defColor,defBrand,defCode]=DEFAULT_PAINT[g.part];
+    const keep=saved[g.part]||{};
+    addLayer({
+      part:g.part,
+      source:'AI自動認識',
+      mask:g.mask,
+      color:keep.color||defColor,
+      brand:keep.brand||defBrand,
+      code:keep.code||defCode,
+      strength:keep.strength??.82,
+      // Do not recolor the house until the user explicitly applies a color.
+      visible:keep.visible===true
+    },false);
+  }
+
+  const wallLayer=layers.find(l=>l.part==='wall'&&l.source==='AI自動認識');
+  selectedLayerId=wallLayer?.id||null;
+  activePart=wallLayer?'wall':activePart;
+  renderLayers();updateReady();render();
+}
+
+async function runSegmentationAI(generation=photoGeneration,userRequested=false){
+  if(!imageLoaded||generation!==photoGeneration||aiRunning)return;
+  aiRunning=true;updateReady();
   schemeNotice.textContent=userRequested
-    ?'高速推定はそのまま使えます。高精度AIを再解析中…'
-    :'高速推定を表示中。高精度AIでバックグラウンド補正中…';
+    ?'AI外壁認識を再実行しています。写真はそのまま操作できます…'
+    :'AIが外壁を認識しています。写真はそのまま操作できます…';
 
   try{
-    const modelPromise=ensureAiModel();
-    let model;
-    try{
-      model=await withTimeout(modelPromise,22000,'高精度AIの準備');
-    }catch(timeoutErr){
-      aiLateApplyGeneration=generation;
-      modelPromise.then(()=>{
-        if(aiLateApplyGeneration===generation&&generation===photoGeneration){
-          setTimeout(()=>runHighPrecisionAI(generation,false),50);
-        }
-      }).catch(()=>{});
-      schemeNotice.textContent='高速推定で操作できます。高精度AIは裏で読み込みを継続しています。';
-      return;
-    }
+    const seg=await withTimeout(getSegmenter(),35000,'AIモデルの準備');
+    if(generation!==photoGeneration)return;
+    schemeNotice.textContent='AIが建物の画素を解析しています…';
+
+    const output=await withTimeout(seg(original),30000,'AI画像解析');
     if(generation!==photoGeneration)return;
 
-    const aiCanvas=document.createElement('canvas');
-    const max=513,sc=Math.min(1,max/Math.max(original.width,original.height));
-    aiCanvas.width=Math.max(1,Math.round(original.width*sc));
-    aiCanvas.height=Math.max(1,Math.round(original.height*sc));
-    aiCanvas.getContext('2d').drawImage(original,0,0,aiCanvas.width,aiCanvas.height);
+    const result=collectSemanticMasks(output);
+    if(!result.wall)throw new Error('この写真では外壁を十分な確度で認識できませんでした');
 
-    const result=await withTimeout(model.segment(aiCanvas),18000,'高精度AI解析');
-    if(generation!==photoGeneration)return;
-    const ai=deepLabMasks(result);
-    if(!ai)throw new Error('建物を高精度AIで特定できませんでした');
-
-    installGeneratedLayers(mergeDirectAiParts(ai),'AI高精度',true);
-    schemeNotice.textContent='高精度AIの自動補正が完了しました。必要な箇所だけ手動で微調整できます。';
-    aiLateApplyGeneration=0;
+    installAiLayers(result);
+    const roofText=result.roof?'屋根も認識しました。':'屋根は確信できないため自動指定していません。';
+    schemeNotice.textContent='AI外壁認識が完了しました。'+roofText+' 必要なら「色で範囲選択」や手動調整を使ってください。';
   }catch(err){
-    console.warn('High precision AI unavailable:',err);
+    console.warn(err);
     if(generation===photoGeneration){
-      schemeNotice.textContent='高速推定結果を使用中。高精度AIは利用できませんでした（手動補正可能）。';
+      schemeNotice.textContent='AI自動認識に失敗しました。誤った範囲は表示せず、「色で範囲選択」または手動範囲指定に切り替えられます。';
     }
   }finally{
-    highAiRunning=false;
-    aiBtn.disabled=false;
+    aiRunning=false;updateReady();
   }
-}
-
-function autoExtractBuildingMask(){
-  const maxDim=220;
-  const sc=Math.min(1,maxDim/Math.max(original.width,original.height));
-  const w=Math.max(72,Math.round(original.width*sc));
-  const h=Math.max(72,Math.round(original.height*sc));
-  const c=document.createElement('canvas'); c.width=w; c.height=h;
-  const x=c.getContext('2d',{willReadFrequently:true});
-  x.drawImage(original,0,0,w,h);
-  const px=x.getImageData(0,0,w,h).data;
-  const n=w*h;
-  const lum=new Float32Array(n), grad=new Float32Array(n);
-  const rgb=(i)=>[px[i*4],px[i*4+1],px[i*4+2]];
-  for(let i=0;i<n;i++) lum[i]=.299*px[i*4]+.587*px[i*4+1]+.114*px[i*4+2];
-  for(let yy=1;yy<h-1;yy++) for(let xx=1;xx<w-1;xx++){
-    const i=yy*w+xx;
-    const gx=Math.abs(lum[i+1]-lum[i-1]);
-    const gy=Math.abs(lum[i+w]-lum[i-w]);
-    grad[i]=Math.min(255,gx+gy);
-  }
-
-  // Learn several background colors from the image border (sky, road, neighboring scene).
-  const samples=[];
-  const step=Math.max(1,Math.floor(Math.min(w,h)/70));
-  for(let yy=0;yy<h;yy+=step) for(let xx=0;xx<w;xx+=step){
-    const border=yy<h*.13 || xx<w*.055 || xx>w*.945 || yy>h*.94;
-    if(border){const i=yy*w+xx;samples.push(rgb(i));}
-  }
-  const centers=kmeansColors(samples,5,5);
-  const colorDist=(r,g,b)=>{
-    let best=1e9;
-    for(const q of centers){const dr=r-q[0],dg=g-q[1],db=b-q[2];const d=dr*dr+dg*dg+db*db;if(d<best)best=d;}
-    return Math.sqrt(best);
-  };
-
-  const raw=new Uint8Array(n);
-  let rawCount=0;
-  for(let yy=0;yy<h;yy++) for(let xx=0;xx<w;xx++){
-    const i=yy*w+xx, r=px[i*4],g=px[i*4+1],b=px[i*4+2];
-    const xn=(xx+.5)/w, yn=(yy+.5)/h;
-    const dx=Math.abs(xn-.5)/.5;
-    const centerPrior=Math.max(0,1-dx)*.58 + Math.max(0,1-Math.abs(yn-.56)/.56)*.35;
-    const bd=Math.min(1,colorDist(r,g,b)/115);
-    const ed=Math.min(1,grad[i]/92);
-    const maxc=Math.max(r,g,b), minc=Math.min(r,g,b), sat=maxc?((maxc-minc)/maxc):0;
-    const vegetation=(g>r*1.10 && g>b*1.06 && sat>.16)?1:0;
-    let score=bd*.72 + ed*.46 + centerPrior*.52 - vegetation*.28;
-    if(yn<.16) score-=.42;
-    if(yn>.94) score-=.22;
-    if(xn<.035 || xn>.965) score-=.30;
-    if(score>.74){raw[i]=1;rawCount++;}
-  }
-
-  let mask=morphClose(raw,w,h,2);
-  mask=morphClose(mask,w,h,1);
-  const comp=largestCenterComponent(mask,w,h);
-  if(!comp) return null;
-  mask=comp.mask;
-
-  // Fill short holes inside each detected row to produce a usable facade silhouette.
-  const bb=componentBounds(mask,w,h);
-  if(!bb) return null;
-  const filled=new Uint8Array(n);
-  for(let yy=bb.minY;yy<=bb.maxY;yy++){
-    let left=w,right=-1,hits=0;
-    for(let xx=bb.minX;xx<=bb.maxX;xx++) if(mask[yy*w+xx]){left=Math.min(left,xx);right=Math.max(right,xx);hits++;}
-    if(right>=left && hits>=Math.max(2,(right-left+1)*.08)){
-      for(let xx=left;xx<=right;xx++){
-        const i=yy*w+xx;
-        // Preserve strong background-looking voids only near the outer edges.
-        if(xx>left+2 && xx<right-2) filled[i]=1; else filled[i]=mask[i];
-      }
-    }
-  }
-  const smoothed=morphClose(filled,w,h,1);
-  let hits=0;for(const v of smoothed)hits+=v;
-  return {mask:smoothed,w,h,hits};
-}
-
-function kmeansColors(samples,k,iterations){
-  if(!samples.length)return [[128,128,128]];
-  k=Math.min(k,samples.length);
-  const centers=[];
-  for(let i=0;i<k;i++) centers.push(samples[Math.floor(i*(samples.length-1)/Math.max(1,k-1))].slice());
-  for(let it=0;it<iterations;it++){
-    const sums=Array.from({length:k},()=>[0,0,0,0]);
-    for(const s of samples){
-      let bi=0,bd=1e18;
-      for(let j=0;j<k;j++){const c=centers[j],dr=s[0]-c[0],dg=s[1]-c[1],db=s[2]-c[2],d=dr*dr+dg*dg+db*db;if(d<bd){bd=d;bi=j;}}
-      const a=sums[bi];a[0]+=s[0];a[1]+=s[1];a[2]+=s[2];a[3]++;
-    }
-    for(let j=0;j<k;j++){const a=sums[j];if(a[3])centers[j]=[a[0]/a[3],a[1]/a[3],a[2]/a[3]];}
-  }
-  return centers;
-}
-
-function morphClose(src,w,h,r){return erodeMask(dilateMask(src,w,h,r),w,h,r);}
-function dilateMask(src,w,h,r){
-  const out=new Uint8Array(src.length);
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let on=0;for(let yy=Math.max(0,y-r);yy<=Math.min(h-1,y+r)&&!on;yy++)for(let xx=Math.max(0,x-r);xx<=Math.min(w-1,x+r);xx++)if(src[yy*w+xx]){on=1;break;}out[y*w+x]=on;}
-  return out;
-}
-function erodeMask(src,w,h,r){
-  const out=new Uint8Array(src.length);
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let on=1;for(let yy=y-r;yy<=y+r&&on;yy++)for(let xx=x-r;xx<=x+r;xx++){if(xx<0||yy<0||xx>=w||yy>=h||!src[yy*w+xx]){on=0;break;}}out[y*w+x]=on;}
-  return out;
-}
-function largestCenterComponent(src,w,h){
-  const seen=new Uint8Array(src.length), q=new Int32Array(src.length);let bestMask=null,bestScore=-1,bestCount=0;
-  for(let i=0;i<src.length;i++){
-    if(!src[i]||seen[i])continue;
-    let head=0,tail=0; q[tail++]=i;seen[i]=1;const inds=[];let sumX=0,sumY=0,minX=w,maxX=0,minY=h,maxY=0;
-    while(head<tail){const idx=q[head++],x=idx%w,y=(idx/w)|0;inds.push(idx);sumX+=x;sumY+=y;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
-      const ns=[idx-1,idx+1,idx-w,idx+w];
-      for(const ni of ns){if(ni<0||ni>=src.length||seen[ni]||!src[ni])continue;const nx=ni%w,ny=(ni/w)|0;if(Math.abs(nx-x)+Math.abs(ny-y)!==1)continue;seen[ni]=1;q[tail++]=ni;}
-    }
-    const count=inds.length,cx=sumX/count,cy=sumY/count;
-    const central=1-Math.min(1,Math.abs(cx-w*.5)/(w*.5));
-    const vertical=1-Math.min(1,Math.abs(cy-h*.56)/(h*.56));
-    const spanBonus=((maxX-minX)/w)*.5+((maxY-minY)/h)*.5;
-    const score=count*(.72+.34*central+.18*vertical+.22*spanBonus);
-    if(score>bestScore){bestScore=score;bestCount=count;bestMask=new Uint8Array(src.length);for(const j of inds)bestMask[j]=1;}
-  }
-  return bestMask?{mask:bestMask,count:bestCount}:null;
-}
-function componentBounds(mask,w,h){let minX=w,maxX=-1,minY=h,maxY=-1,count=0;for(let i=0;i<mask.length;i++)if(mask[i]){const x=i%w,y=(i/w)|0;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);count++;}return count?{minX,maxX,minY,maxY,count}:null;}
-
-function fallbackBuildingMask(){
-  const maxDim=180,sc=Math.min(1,maxDim/Math.max(original.width,original.height));
-  const w=Math.max(72,Math.round(original.width*sc)),h=Math.max(72,Math.round(original.height*sc));
-  const mask=new Uint8Array(w*h);
-  // Conservative central house-shaped polygon: roof narrower at top, body wider below.
-  const pts=[[.17,.28],[.34,.18],[.72,.18],[.90,.33],[.91,.88],[.10,.88],[.10,.42]];
-  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0]*w,p[1]*h):x.moveTo(p[0]*w,p[1]*h));x.closePath();x.fill();
-  const d=x.getImageData(0,0,w,h).data;let hits=0;for(let i=0,j=0;i<d.length;i+=4,j++)if(d[i+3]){mask[j]=1;hits++;}
-  return {mask,w,h,hits};
-}
-
-function upscaleMask(src,sw,sh,dw,dh){const out=new Uint8Array(dw*dh);for(let y=0;y<dh;y++){const sy=Math.min(sh-1,Math.floor(y*sh/dh));for(let x=0;x<dw;x++){const sx=Math.min(sw-1,Math.floor(x*sw/dw));out[y*dw+x]=src[sy*sw+sx];}}return out;}
-function derivePartMasks(base,w,h){
-  let minX=w,maxX=0,minY=h,maxY=0,count=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(base[y*w+x]){count++;if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}
-  if(!count)return {}; const span=Math.max(1,maxY-minY);const roof=new Uint8Array(base.length),wall=new Uint8Array(base.length),gutter=new Uint8Array(base.length),fascia=new Uint8Array(base.length),soffit=new Uint8Array(base.length);
-  for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){const i=y*w+x;if(!base[i])continue;const r=(y-minY)/span;if(r<.30)roof[i]=1;else wall[i]=1;if(r>=.255&&r<.285)fascia[i]=1;if(r>=.285&&r<.31)gutter[i]=1;if(r>=.31&&r<.355)soffit[i]=1;}
-  return {wall,roof,gutter,fascia,soffit};
 }
 
 function addLayer(data,select=true){
@@ -619,23 +526,53 @@ function selectLayer(id){
 }
 function applyCurrentPaint(){
   let targets=selectedLayerId?layers.filter(l=>l.id===selectedLayerId):layers.filter(l=>l.part===activePart);if(!targets.length)return;
-  targets.forEach(l=>{l.color=customColor.value;l.brand=brandInput.value.trim()||'カスタム';l.code=codeInput.value.trim()||'任意色';l.strength=Number(strength.value)/100;});renderLayers();render();schemeNotice.textContent='配色を変更しました（A/B/C案へ保存可能）';
+  targets.forEach(l=>{l.color=customColor.value;l.brand=brandInput.value.trim()||'カスタム';l.code=codeInput.value.trim()||'任意色';l.strength=Number(strength.value)/100;l.visible=true;});renderLayers();render();schemeNotice.textContent='配色を変更しました（A/B/C案へ保存可能）';
 }
 function renderLayers(){
   layersEl.innerHTML='';if(!layers.length){layersEl.innerHTML='<div class="muted">まだ範囲がありません。</div>';updateReady();return;}
-  layers.forEach(l=>{const row=document.createElement('div');row.className='layer'+(l.id===selectedLayerId?' selected':'');row.innerHTML=`<div class="layer-dot" style="--c:${l.color}"></div><div class="layer-main"><div class="layer-title">${partName(l.part)} <span class="muted">${l.source}</span></div><div class="layer-sub">${escapeHtml(l.brand)} / ${escapeHtml(l.code)}</div></div><div class="layer-actions"><button class="toggle">${l.visible?'表示':'非表示'}</button><button class="del">削除</button></div>`;
-    row.onclick=e=>{if(!e.target.closest('button'))selectLayer(l.id);};row.querySelector('.toggle').onclick=e=>{e.stopPropagation();l.visible=!l.visible;renderLayers();render();};row.querySelector('.del').onclick=e=>{e.stopPropagation();layers=layers.filter(x=>x.id!==l.id);if(selectedLayerId===l.id)selectedLayerId=null;renderLayers();render();updateReady();};layersEl.appendChild(row);});updateReady();
+  layers.forEach(l=>{const row=document.createElement('div');row.className='layer'+(l.id===selectedLayerId?' selected':'');row.innerHTML=`<div class="layer-dot" style="--c:${l.color}"></div><div class="layer-main"><div class="layer-title">${partName(l.part)} <span class="muted">${l.source}</span></div><div class="layer-sub">${escapeHtml(l.brand)} / ${escapeHtml(l.code)}</div></div><div class="layer-actions">${l.points?.length?'<button class="edit">編集</button>':''}<button class="toggle">${l.visible?'隠す':'表示'}</button><button class="del">削除</button></div>`;
+    row.onclick=e=>{if(!e.target.closest('button'))selectLayer(l.id);};
+    const editBtn=row.querySelector('.edit'); if(editBtn) editBtn.onclick=e=>{e.stopPropagation();selectLayer(l.id);startEditLayer(l.id);};
+    row.querySelector('.toggle').onclick=e=>{e.stopPropagation();l.visible=!l.visible;renderLayers();render();};
+    row.querySelector('.del').onclick=e=>{e.stopPropagation();layers=layers.filter(x=>x.id!==l.id);if(selectedLayerId===l.id)selectedLayerId=null;renderLayers();render();updateReady();};
+    layersEl.appendChild(row);});updateReady();
 }
 function partName(id){return PARTS.find(p=>p.id===id)?.name||id;}
 
 function render(){
   if(!imageLoaded)return;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(original,0,0);
-  if(!showingBefore){const img=ctx.getImageData(0,0,canvas.width,canvas.height),d=img.data;for(const l of layers)if(l.visible)applyLayerPixels(d,l);ctx.putImageData(img,0,0);}
+  if(!showingBefore){const img=ctx.getImageData(0,0,canvas.width,canvas.height),d=img.data;for(const l of layers)if(l.visible)applyLayerPixels(d,l);if(samplePreviewMask)applyPreviewPixels(d,samplePreviewMask);ctx.putImageData(img,0,0);}
+  if(!showingBefore&&samplePreviewMask)drawMaskOutline(samplePreviewMask,'rgba(0,163,255,.92)');
+  if(!showingBefore&&sampleSeed){ctx.save();ctx.beginPath();ctx.arc(sampleSeed.x,sampleSeed.y,Math.max(8,canvas.width/180),0,Math.PI*2);ctx.strokeStyle='#00a3ff';ctx.lineWidth=3;ctx.stroke();ctx.restore();}
+  if(!showingBefore&&selectedLayerId){
+    const sl=layers.find(x=>x.id===selectedLayerId);
+    if(sl && !sl.visible)drawMaskOutline(sl.mask,'rgba(255,255,255,.92)');
+  }
   if(polygonMode&&currentPoints.length&&!showingBefore)drawPolygonGuide();
+  if(polygonMode&&loupe&&!showingBefore)drawLoupe(loupe.x,loupe.y);
 }
 function applyLayerPixels(data,l){
   const [tr,tg,tb]=hexToRgb(l.color),th=rgbToHsl(tr,tg,tb),s=l.strength??.82,m=l.mask;for(let p=0,i=0;p<m.length;p++,i+=4){if(!m[p])continue;const oh=rgbToHsl(data[i],data[i+1],data[i+2]);const light=Math.max(.035,Math.min(.97,th[2]*(.55+oh[2]*.95)));const sat=Math.min(1,th[1]*.9+oh[1]*.1);const [nr,ng,nb]=hslToRgb(th[0],sat,light);data[i]=Math.round(data[i]*(1-s)+nr*s);data[i+1]=Math.round(data[i+1]*(1-s)+ng*s);data[i+2]=Math.round(data[i+2]*(1-s)+nb*s);}
 }
+
+function drawMaskOutline(mask){
+  if(!mask||mask.length!==canvas.width*canvas.height)return;
+  const w=canvas.width,h=canvas.height;
+  ctx.save();
+  ctx.fillStyle='rgba(0,163,255,.78)';
+  const step=Math.max(1,Math.floor(Math.max(w,h)/900));
+  const dot=Math.max(1.2,w/850);
+  for(let y=step;y<h-step;y+=step){
+    for(let x=step;x<w-step;x+=step){
+      const i=y*w+x;if(!mask[i])continue;
+      if(!mask[i-1]||!mask[i+1]||!mask[i-w]||!mask[i+w]){
+        ctx.fillRect(x-dot/2,y-dot/2,dot,dot);
+      }
+    }
+  }
+  ctx.restore();
+}
+
 function drawPolygonGuide(){ctx.save();ctx.beginPath();currentPoints.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineWidth=Math.max(3,canvas.width/420);ctx.strokeStyle='#00a3ff';ctx.setLineDash([12,8]);ctx.stroke();ctx.setLineDash([]);for(const [i,p] of currentPoints.entries()){ctx.beginPath();ctx.arc(p.x,p.y,Math.max(6,canvas.width/200),0,Math.PI*2);ctx.fillStyle=i?'#00a3ff':'#111827';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}ctx.restore();}
 
 function snapshotState(){return layers.map(l=>({id:l.id,color:l.color,brand:l.brand,code:l.code,strength:l.strength,visible:l.visible}));}
@@ -673,12 +610,36 @@ function saveProject(){
   try{const data={version:1,savedAt:new Date().toISOString(),image:captureBefore(),w:canvas.width,h:canvas.height,layers:layers.map(l=>({id:l.id,part:l.part,source:l.source,color:l.color,brand:l.brand,code:l.code,strength:l.strength,visible:l.visible,points:l.points,mask:packMask(l.mask)})),schemes,customer:{customerName:customerName.value,siteAddress:siteAddress.value,companyName:companyName.value,staffName:staffName.value,proposalMemo:proposalMemo.value}};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=safeFileName((customerName.value||'住宅')+'_塗り替え案件')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}catch(e){console.error(e);alert('案件保存に失敗しました。');}
 }
 async function loadProjectFile(file){
-  try{const data=JSON.parse(await file.text());if(!data.image||!data.w||!data.h)throw new Error('形式が違います');const img=await loadImage(data.image);setupImageCanvas(data.w,data.h);octx.clearRect(0,0,data.w,data.h);octx.drawImage(img,0,0,data.w,data.h);layers=(data.layers||[]).map(l=>({...l,mask:unpackMask(l.mask,data.w*data.h)}));schemes=data.schemes||{A:null,B:null,C:null};const c=data.customer||{};customerName.value=c.customerName||'';siteAddress.value=c.siteAddress||'';companyName.value=c.companyName||'';staffName.value=c.staffName||'';proposalMemo.value=c.proposalMemo||'';document.querySelectorAll('.scheme-group').forEach(g=>g.classList.toggle('saved',!!schemes[g.dataset.scheme]));selectedLayerId=null;polygonMode=false;currentPoints=[];canvasTip.hidden=true;renderLayers();updateReady();render();schemeNotice.textContent='案件を読み込みました';}catch(e){console.error(e);alert('案件ファイルを読み込めませんでした。');}
+  try{const data=JSON.parse(await file.text());if(!data.image||!data.w||!data.h)throw new Error('形式が違います');const img=await loadImage(data.image);setupImageCanvas(data.w,data.h);octx.clearRect(0,0,data.w,data.h);octx.drawImage(img,0,0,data.w,data.h);layers=(data.layers||[]).map(l=>({...l,mask:unpackMask(l.mask,data.w*data.h)}));schemes=data.schemes||{A:null,B:null,C:null};const c=data.customer||{};customerName.value=c.customerName||'';siteAddress.value=c.siteAddress||'';companyName.value=c.companyName||'';staffName.value=c.staffName||'';proposalMemo.value=c.proposalMemo||'';document.querySelectorAll('.scheme-group').forEach(g=>g.classList.toggle('saved',!!schemes[g.dataset.scheme]));selectedLayerId=null;polygonMode=false;sampleMode=false;currentPoints=[];editingLayerId=null;samplePreviewMask=null;sampleSeed=null;loupe=null;sourcePixels=octx.getImageData(0,0,data.w,data.h).data;canvasTip.hidden=true;renderLayers();updateReady();render();schemeNotice.textContent='案件を読み込みました';}catch(e){console.error(e);alert('案件ファイルを読み込めませんでした。');}
 }
 function packMask(mask){const bytes=new Uint8Array(Math.ceil(mask.length/8));for(let i=0;i<mask.length;i++)if(mask[i])bytes[i>>3]|=1<<(i&7);return bytesToBase64(bytes);}
 function unpackMask(b64,len){const bytes=base64ToBytes(b64),mask=new Uint8Array(len);for(let i=0;i<len;i++)mask[i]=(bytes[i>>3]>>(i&7))&1;return mask;}
 function bytesToBase64(bytes){let out='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)out+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(out);}
 function base64ToBytes(s){const b=atob(s),out=new Uint8Array(b.length);for(let i=0;i<b.length;i++)out[i]=b.charCodeAt(i);return out;}
+function getPixel(data,x,y,w){const i=(y*w+x)*4;return[data[i],data[i+1],data[i+2],data[i+3]];}
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+function colorDistanceWeighted(r1,g1,b1,r2,g2,b2){
+  const y1=.299*r1+.587*g1+.114*b1, y2=.299*r2+.587*g2+.114*b2;
+  const cb1=b1-y1, cb2=b2-y2, cr1=r1-y1, cr2=r2-y2;
+  const dy=y1-y2, dcb=cb1-cb2, dcr=cr1-cr2;
+  return Math.sqrt(dcb*dcb+dcr*dcr+dy*dy*.18);
+}
+function floodFillByColor(seedX,seedY,tol){
+  const w=canvas.width,h=canvas.height,size=w*h; const mask=new Uint8Array(size), seen=new Uint8Array(size), q=new Int32Array(size);
+  const [sr,sg,sb,sa]=getPixel(sourcePixels,seedX,seedY,w); if(sa===0)return mask; const start=seedY*w+seedX; let head=0,tail=0;
+  q[tail++]=start; seen[start]=1;
+  while(head<tail){
+    const idx=q[head++], x=idx%w, y=(idx/w)|0; const i=idx*4;
+    if(colorDistanceWeighted(sourcePixels[i],sourcePixels[i+1],sourcePixels[i+2],sr,sg,sb)>tol)continue;
+    mask[idx]=1;
+    if(x>0){const n=idx-1;if(!seen[n]){seen[n]=1;q[tail++]=n;}}
+    if(x<w-1){const n=idx+1;if(!seen[n]){seen[n]=1;q[tail++]=n;}}
+    if(y>0){const n=idx-w;if(!seen[n]){seen[n]=1;q[tail++]=n;}}
+    if(y<h-1){const n=idx+w;if(!seen[n]){seen[n]=1;q[tail++]=n;}}
+  }
+  return mask;
+}
+
 
 function hexToRgb(hex){const v=parseInt(hex.slice(1),16);return[(v>>16)&255,(v>>8)&255,v&255];}
 function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;if(max!==min){const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4;}h/=6;}return[h,s,l];}
@@ -695,7 +656,7 @@ init();
 <header class="topbar">
   <div class="brandbox">
     <div class="brand">住宅塗り替えカラー提案 Pro</div>
-    <div class="brand-sub">写真 → 高速推定 → 高精度AI自動補正 → 配色比較 → 提案書PDF　v1.5</div>
+    <div class="brand-sub">写真 → AI外壁認識 + 色抽出 + 手動補正 → 配色比較 → 提案書PDF　v1.7</div>
   </div>
   <div class="top-actions">
     <label class="btn primary" for="photoInput">カメラで撮影</label>
@@ -717,14 +678,16 @@ init();
       <div class="canvas-tip" id="canvasTip" hidden>角を順番にタップしてください。3点以上で範囲を確定できます。</div>
       <div class="ai-overlay" id="aiOverlay" hidden>
         <div class="spinner"></div>
-        <b id="aiStatus">建物候補を作成しています…</b>
-        <small id="aiSubstatus">まず高速推定を表示します。</small>
+        <b id="aiStatus">AIで外壁を認識しています…</b>
+        <small id="aiSubstatus">写真はそのまま操作できます。</small>
       </div>
     </div>
 
     <div class="toolbar">
-      <button id="aiBtn" class="primary" disabled>高精度AIを再試行</button>
+      <button id="aiBtn" class="primary" disabled>AI認識を再実行</button>
       <button id="polygonBtn" disabled>手動で範囲指定</button>
+      <button id="sampleBtn" disabled>色で範囲選択</button>
+      <button id="applySampleBtn" disabled>抽出範囲を追加</button>
       <button id="finishPolygonBtn" disabled>範囲を確定</button>
       <button id="undoPointBtn" disabled>1点戻す</button>
       <button id="beforeBtn" disabled>施工前を長押し</button>
@@ -748,7 +711,21 @@ init();
         <label>手動範囲の部位</label>
         <select id="partSelect"></select>
       </div>
-      <div class="notice">写真を読み込むと、まず端末内の高速推定ですぐ候補を表示し、その後バックグラウンドの高精度AIで建物境界を自動補正します。AIが失敗しても高速推定結果はそのまま使えます。必要な部分だけ手動で補正できます。</div>
+      <div class="field compact">
+        <label>類似色の許容 <span id="sampleToleranceLabel">35</span></label>
+        <input id="sampleTolerance" type="range" min="8" max="140" value="35">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>抽出元の色</label>
+          <input id="sampleColorPreview" type="color" value="#d2c3aa" disabled>
+        </div>
+        <div class="field">
+          <label>色抽出の状態</label>
+          <div class="notice" id="sampleStatus" style="margin-top:0">まだ抽出していません</div>
+        </div>
+      </div>
+      <div class="notice">写真を読み込むとAIが外壁・建物・屋根を画素単位で認識します。さらに「色で範囲選択」で壁の色をタップし、類似色スライダーで範囲を確認しながら抽出できます。手動ポリゴンは点をドラッグで動かせて、タッチ位置は拡大表示されます。</div>
     </section>
 
     <section class="card panel">
